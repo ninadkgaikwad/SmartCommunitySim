@@ -1,0 +1,53 @@
+KPEC 2025 - Smart Community Simulator:
+
+- Current Features:
+
+	- DERS:
+		- Solar PV (Not - Controllable)
+		- Battery Storage (Controllable)
+		- HVAC (Controllable)
+		- Controllable Load (Prioritized 8 Level Loads)
+
+	- Controllers:
+		- Baseline Off-Grid
+		- Rule Based Off-Grid
+		
+	- Plant Physics:
+		- Off-Grid (Considers Startup Power of HVAC)
+
+- Feature Extension:
+
+	- Gymnaesium Wrapper + GitHub Repository
+
+		- Create an organized folder [Done]
+		- Setup MATLAB Engine for Python [Done]
+		- Improve Off-Grid to incorporate passive PV Control, add Heating Mode, add mode to select if AC turn-on Power matters [Done] 
+		- Create all results for new offgrid without startup constraints [Done]
+		- Upload and organize all results (new) in overleaf [To be Done]
+		- Create Gymnaesium Wrapper [To be Done]
+		- Create Custom Policy Class for the three available policies [To be Done]
+
+	- DERS:
+		- Solar PV (Controllable) [Done]
+
+	- Controllers:
+		- Baseline On-Grid [Done]
+		- Heating and Cooling Mode for AC Controller [Done]
+		
+	- Plant Physics:
+		- On-Grid (Get the state variable for Energy/Power from Grid, no consideration for HVAC start-up power) [Done]
+	
+	- Functions to be changed/written:
+		
+		- HEMS_Dumb_LocalController_OnGrid.m [Done]
+		- HEMS_Battery_Controller_OnGrid.m [Done]
+		- HEMS_PV_Controller_OnGrid.m [Done]
+
+		- BaselineController_Main.m [Done]
+		- HEMS_AC_Controller_HeatingMode.m [Done]
+		- HEMS_CommunityHouse_Parameter_Generator1.m [Done]
+		- HEMS_HouseRCModel_HeatingMode.m [Done]
+
+		- HEMS_Plant_OnGrid.m [Done]
+		- HEMS_Plant_Performance_Computer_OnGrid.m [Done]
+		- HEMS_Plant_FigurePlotter_OnGrid.m [Done]
