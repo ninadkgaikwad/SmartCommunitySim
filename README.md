@@ -42,6 +42,7 @@ Smart_Community_Simulator/
 └── LegacyCode
     ├── Matlab_Organized
     └── MatlabCode_Main
+```
 
 The Examples folder has detailed explanation scripts for understanding the various aspects of this simulator environment and the default controllers.
 
