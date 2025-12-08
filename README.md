@@ -1,41 +1,122 @@
 # Smart Community Simulator
 
-The Smart Community Simulator is designed as a Gymnasium Environment for simulation/analysis/intelligent control design for single house or a community with the following features:
+The **Smart Community Simulator (SmartComSim)** is a **Gymnasium-compatible simulation and control environment** designed for research, analysis, and intelligent controller development for **single-house** and **multi-house residential communities** with distributed energy resources (DERs).
 
-1. **Heterogenous Residential Community:** A community of houses can be created from a mixture of houses with different combinations of Distributed Energy Resources (DERs).
-2. **DER Combinations:** Houses can have any combination of DERs in PV+Bat/Bat/PV/None (PV - Photovoltaic Panels, Bat - Battery Storage) (Future version will have EVs too).
-3. **HVAC:** Every house is equipped with Electric HVAC system capable of both heating and cooling modes and control is on-off of the HVAC (Thermal characteristics for all houses are the same -> Future version will have the ability for having different thermal characteristics characteristics for each house).
-3. **Photovoltaic Panels:** PV of desired size can be employed and its power output can be controlled in On-grid mode only (in Off-grid mode PV acts in load matching mode) (PV specifications are same for every house that has PV -> Future version will have the ability for having different PV specifications for every house with PV).
-3. **Battery Storage:** Battery of desired size can be employed (through scaling of Tesla Powerwall 13.5kWh) and its charging/discharging power can be controlled (Battery storage specifications are the same for every house with a battery -> Future version will have the ability for having different battery storage specifications for every house with battery).
-6. **Non-HVAC Load:** Every House load circuit is divided 8 circuits with different combination of loads so that a priority of loads can be developed and each load circuit can be individually turned on or off (currently the load data source is free PecanStreet Dataset).
-7. **Weather Data:** Cuurently we support weather data from National Solar Radiation Database (NSRDB).
-8. **Weather/Load Data Preprocessing:** We provide functionality for preprocessing NSRDB (original dataset 30 mins) and PecanStreet datasets (original dataset 15 mins) to any desired higher time resolution for custom time resolution simulation and control design applications. 
-9. **Grid Interaction:** Supports simulations for both On-grid and Off-grid operational modes.
-10. **Default Baseline Controllers:** We provide tow default controllers for Off-grid mode and one for On-grid mode.
-11. **Flexible Observation And Action Spaces:** The simulator has default observation and action spaces; however, we provide interface for custom observation/action spaces so as to model custom control scenarios.
+This simulator was published at **IEEE SmartGridComm 2025**:
+
+```bibtex
+@inproceedings{gaikwad2025smart,
+  title={Smart Residential Community Simulator for Developing and Benchmarking Energy Management Systems},
+  author={Gaikwad, Ninad and Dubey, Anamika},
+  booktitle={2025 IEEE International Conference on Communications, Control, and Computing Technologies for Smart Grids (SmartGridComm)},
+  pages={1--7},
+  year={2025},
+  organization={IEEE}
+}
+```
+
+---
+
+## Key Features
+
+### 1. Heterogeneous Residential Communities
+Create communities consisting of houses equipped with:
+- **PV + Battery**
+- **PV only**
+- **Battery only**
+- **No DERs**  
+(Future versions will support EV integration and per-house DER diversity.)
+
+---
+
+### 2. Detailed House-Level Modeling
+
+#### HVAC System
+- Electric HVAC with ON/OFF control  
+- Shared RC-network thermal model  
+- Future support for per-house thermal parameters  
+
+#### Photovoltaic System
+- Controllable in **On-grid mode**  
+- Automatic load-matching behavior in **Off-grid mode**
+
+#### Battery Storage
+- Scaled Tesla Powerwall model (13.5 kWh)  
+- Supports constrained charging/discharging with round-trip efficiency  
+
+#### Priority-Based Non-HVAC Loads
+- 8 circuit-level loads per home  
+- Supports prioritized load shedding  
+- Default load profiles from the **Pecan Street Dataset**
+
+---
+
+### 3. Weather & Load Data Processing
+- NSRDB weather data processed from 30-min resolution  
+- Pecan Street load data processed from 15-min resolution  
+- Flexible user-defined resampling to arbitrary simulation time steps  
+
+---
+
+### 4. Grid-Interaction Modes
+
+#### On-Grid Mode
+- Import/export with the grid  
+- PV curtailment  
+- Energy cost modeling  
+
+#### Off-Grid Mode
+- Load prioritization logic  
+- PV load-matching  
+- Battery-based resilience modeling  
+
+---
+
+### 5. Built-In Baseline Controllers
+- Two Off-grid baseline EMS controllers  
+- One On-grid baseline EMS controller  
+- Plug-and-play support for custom RL and MPC controllers  
+
+---
+
+### 6. Flexible Observation & Action Spaces
+- Default Gymnasium observation and action spaces  
+- Full support for custom definitions  
+- Integrates with RLlib, Stable Baselines3, or custom controllers  
+
+---
 
 ## Requirements
-- Python (supported versions: 3.9, 3.10, 3.11, 3.12 — all 64-bit)
+
+### Python (64-bit)
+Supported versions:
+- 3.9  
+- 3.10  
+- 3.11  
+- 3.12  
+
+### Dependencies
 - NumPy  
 - SciPy  
 - Matplotlib  
-- MATLAB **R2025a (64-bit version)**  
-- `matlab.engine` (to be installed in your Python environment)
+- MATLAB **R2025a**  
+- `matlab.engine`
 
-### MATLAB + Python Setup
-To use the simulator with MATLAB:  
+---
 
-1. **Upgrade to MATLAB R2025a (64-bit).**  
-2. Select a supported Python version (3.9–3.12, 64-bit).  
-3. Create/activate your dedicated conda (or venv) environment with that Python version.  
-4. Install the MATLAB Engine API for Python in that environment:  
+## MATLAB + Python Setup
+
+1. Install **MATLAB R2025a (64-bit)**  
+2. Use Python 3.9–3.12 (64-bit)  
+3. Install the MATLAB Engine API:
    ```bash
    python -m pip install matlabengine
-5. Refer to the official MATLAB documentation for details:  
+   ```  
+4. Refer to MathWorks documentation:
+   - https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html  
+   - https://www.mathworks.com/support/requirements/python-compatibility.html  
 
-- [Install the MATLAB Engine API for Python](https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html)  
-- [Python Version Compatibility with MATLAB](https://www.mathworks.com/support/requirements/python-compatibility.html)  
-
+---
 
 ## Project Structure
 
@@ -43,8 +124,13 @@ To use the simulator with MATLAB:
 Smart_Community_Simulator/
 ├── code
 │   ├── Examples
+│   ├── Experiments
+│   │   ├── Exp_MainScripts
+│   │   ├── Exp_Modules
+│   │   ├── Exp_Results
+│   │   └── Exp_Test
 │   ├── SmartComSim
-│   ├── Test
+│   └── Test
 │
 ├── data
 │   ├── LoadData
@@ -54,27 +140,79 @@ Smart_Community_Simulator/
 │       ├── ProcessedFiles
 │       └── RawFiles
 │
+├── environment
+│
 └── LegacyCode
     ├── Matlab_Organized
     └── MatlabCode_Main
 ```
 
-The Examples folder has detailed explanation scripts for understanding the various aspects of this simulator environment and the default controllers.
+---
 
-More documentation will follow....
+### New Folders
 
-## Weather and Load Files
+#### Experiments/
+A complete research pipeline for experiments:
+- `Exp_MainScripts` — master experiment scripts  
+- `Exp_Modules` — reusable experiment utilities  
+- `Exp_Results` — plots, logs, and result files  
+- `Exp_Test` — minimal/debug experiments  
 
-1. [Dropbox Link to Processed NSRDB Weather Files for major cities in US](https://www.dropbox.com/scl/fo/rv1ju1legnase4cfrx9zz/ACcbPML55FaOzVC4UYFuPv0?rlkey=g0c1younsdemmdhsoy0b3emjv&st=u0kt0h2q&dl=0)
-2. [Dropbox Link to Raw NSRDB Weather Files for major cities in US](https://www.dropbox.com/scl/fo/d73plxcwy3yxcf8v9vyby/AHGXfNsgwUnQhY9DpA6ekmU?rlkey=yb5lptobeosrm00qd5fvjf9oa&st=5cysv7rw&dl=0)
-3. [Dropbox Link to PecanStreet Processed Dataset](https://www.dropbox.com/scl/fo/xv9j7f28o6o6ghtrj7z4v/AP6sk6xp148zx3Nr42piAPA?rlkey=ha1hntpckghli443p8arieqhh&st=egug5d84&dl=0)
-3. [Dropbox Link to PecanStreet Raw Dataset](https://www.dropbox.com/scl/fo/inuuaiq0wydx6ewmwkrop/ABcg9HjHGVgvcoDCq6OXxYo?rlkey=w1qg6xplj6hryjcjlvf7ij5we&st=1hlrira2&dl=0)
+#### environment/
+- Conda environment files  
+- Dependency pins  
+- Reproducibility helpers  
+
+---
+
+## Weather & Load Data (Dropbox Links)
+
+1. **Processed NSRDB Weather Files**  
+   https://www.dropbox.com/scl/fo/rv1ju1legnase4cfrx9zz  
+
+2. **Raw NSRDB Weather Files**  
+   https://www.dropbox.com/scl/fo/d73plxcwy3yxcf8v9vyby  
+
+3. **Processed Pecan Street Load Data**  
+   https://www.dropbox.com/scl/fo/xv9j7f28o6o6ghtrj7z4v  
+
+4. **Raw Pecan Street Load Data**  
+   https://www.dropbox.com/scl/fo/inuuaiq0wydx6ewmwkrop  
+
+---
+
+## Documentation
+
+Example scripts in `code/Examples` demonstrate:
+- Creating custom communities  
+- Interfacing with MATLAB models  
+- Running the simulator step-by-step  
+- Using baseline controllers  
+- On-grid vs Off-grid experiments  
+
+More detailed documentation is coming soon.
+
+---
 
 ## Citation
 
-Coming soon....
+If you use this simulator in your research, please cite:
 
-## Authors and Contributors
-1. Ninad Kiran Gaikwad
-2. Shishir Lamichhane
+```bibtex
+@inproceedings{gaikwad2025smart,
+  title={Smart Residential Community Simulator for Developing and Benchmarking Energy Management Systems},
+  author={Gaikwad, Ninad and Dubey, Anamika},
+  booktitle={2025 IEEE International Conference on Communications, Control, and Computing Technologies for Smart Grids (SmartGridComm)},
+  pages={1--7},
+  year={2025},
+  organization={IEEE}
+}
+```
+
+---
+
+## Authors & Contributors
+
+- **Ninad Kiran Gaikwad**  
+- **Shishir Lamichhane**
 
