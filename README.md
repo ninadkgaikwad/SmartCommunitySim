@@ -15,12 +15,27 @@ The Smart Community Simulator is designed as a Gymnasium Environment for simulat
 11. **Flexible Observation And Action Spaces:** The simulator has default observation and action spaces; however, we provide interface for custom observation/action spaces so as to model custom control scenarios.
 
 ## Requirements
-- Python
-- NumPy
-- SciPy
-- Matplotlib
-- MATLAB
-- matlab.engine
+- Python (supported versions: 3.9, 3.10, 3.11, 3.12 — all 64-bit)
+- NumPy  
+- SciPy  
+- Matplotlib  
+- MATLAB **R2025a (64-bit version)**  
+- `matlab.engine` (to be installed in your Python environment)
+
+### MATLAB + Python Setup
+To use the simulator with MATLAB:  
+
+1. **Upgrade to MATLAB R2025a (64-bit).**  
+2. Select a supported Python version (3.9–3.12, 64-bit).  
+3. Create/activate your dedicated conda (or venv) environment with that Python version.  
+4. Install the MATLAB Engine API for Python in that environment:  
+   ```bash
+   python -m pip install matlabengine
+5. Refer to the official MATLAB documentation for details:  
+
+- [Install the MATLAB Engine API for Python](https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html)  
+- [Python Version Compatibility with MATLAB](https://www.mathworks.com/support/requirements/python-compatibility.html)  
+
 
 ## Project Structure
 
