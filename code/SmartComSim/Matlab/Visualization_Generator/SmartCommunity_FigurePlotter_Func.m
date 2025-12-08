@@ -1,4 +1,4 @@
-function [] = SmartCommunity_FigurePlotter_Func(X_k_Plant_History, U_k_History, E_LoadData, E_Load_Desired, HEMSWeatherData_Output, HEMSPlant_Params, Community_Params, Simulation_Params, result_filefolder_paths)
+function [] = SmartCommunity_FigurePlotter_Func(X_k_Plant_History, U_k_History, E_LoadData, E_Load_Desired, HEMSWeatherData_Output, HEMSPlant_Params, Community_Params, Simulation_Params, result_filefolder_paths, minimal)
     %SMARTCOMMUNITY_FIGUREPLOTTER_FUNC Saves simulation data for Smart Community simulations.
     %
     % This function stores relevant simulation variables in a structured format and 
@@ -43,13 +43,30 @@ function [] = SmartCommunity_FigurePlotter_Func(X_k_Plant_History, U_k_History, 
     Simulation_ModeType = Simulation_Params.Simulation_ModeType;   
 
     % Plotting using External Function
-    if (Simulation_ModeType == 0) % Off-Grid Mode
-        
-        HEMS_Plant_FigurePlotter_OffGrid(HEMS_Plant_FigurePlotter_Input);
+    if strcmp(minimal, 'Yes')
+    % do something
 
-    elseif (Simulation_ModeType == 1) % On-Grid Mode
+        if (Simulation_ModeType == 0) % Off-Grid Mode
+            
+            HEMS_Plant_FigurePlotter_OffGrid_Updated(HEMS_Plant_FigurePlotter_Input);
 
-        HEMS_Plant_FigurePlotter_OnGrid(HEMS_Plant_FigurePlotter_Input);
+        elseif (Simulation_ModeType == 1) % On-Grid Mode
+
+            HEMS_Plant_FigurePlotter_OnGrid_Updated(HEMS_Plant_FigurePlotter_Input);
+
+        end
+
+    else
+
+        if (Simulation_ModeType == 0) % Off-Grid Mode
+            
+            HEMS_Plant_FigurePlotter_OffGrid(HEMS_Plant_FigurePlotter_Input);
+
+        elseif (Simulation_ModeType == 1) % On-Grid Mode
+
+            HEMS_Plant_FigurePlotter_OnGrid(HEMS_Plant_FigurePlotter_Input);
+
+        end
 
     end
 

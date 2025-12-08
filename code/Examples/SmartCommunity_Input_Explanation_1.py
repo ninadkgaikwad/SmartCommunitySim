@@ -31,21 +31,22 @@ simulation_params = {
     "FileRes": 10.0,  # in Minutes
     "SmartCommunity_ControllerType": 2,  # 1 = Smart Local Controller ; 2 = Dumb Local Controller
     "Simulation_ModeType": 0,  # 0 - Off-Grid, 1 - On-Grid
-    "OffGrid_Simulation_ModeType": 0,  # 1 - With AC Start-up constraint ; 0 - Without AC Start-up constraint
+    "OffGrid_Simulation_ModeType": 1,  # 1 - With AC Start-up constraint ; 0 - Without AC Start-up constraint
     "SimulationType": 0,  # Single Large House Simulation type
-    "LoadDataType": 2,  # 1 = Preprocessed Pecan Street data ; 2 = .mat File exists
-    "WeatherDataType": 2,  # 1 = Preprocessed NSRDB File ; 2 = .mat File exists
+    "LoadDataType": 1,  # 1 = Preprocessed Pecan Street data ; 2 = .mat File exists
+    "WeatherDataType": 1,  # 1 = Preprocessed NSRDB File ; 2 = .mat File exists
     "Single_House_Plotting_Index": 1,  # House index for single-house plotting
     "ObservationSpace_Type": "Default",  # Default ; User-Defined
     "ActionSpace_Type": "Default",  # Default ; User-Defined
+    "History_Flag": True,  # Captures State Action Histories if True
 }
 
 # -------------------- Community Specification -------------------- #
 community_params = {
     "N_PV_Bat": 1,  # Houses with both PV and Battery
-    "N_PV": 1,  # Houses with just PV
-    "N_Bat": 1,  # Houses with just Battery
-    "N_None": 1,  # Houses with neither PV nor Battery
+    "N_PV": 0,  # Houses with just PV
+    "N_Bat": 0,  # Houses with just Battery
+    "N_None": 0,  # Houses with neither PV nor Battery
 }
 
 # -------------------- Plant Initial Conditions -------------------- #
@@ -72,15 +73,15 @@ result_filefolder_paths = {
     "Plot_FileName_Stem": "Gainesville_OffGrid_Baseline_WOACSC_",
     "SimulationData_FileName": "SimulationData_Gainesville_OffGrid_Baseline_WOACSC",
     "SimulationPerformanceData_FileName": "PerformanceData_Gainesville_OffGrid_Baseline_WOACSC",
-    "LoadData_FileName": "PecanStreet_LoadData_PVBat_1_Bat_1_PV_1_None_1",
+    "LoadData_FileName": "PecanStreet_LoadData_PVBat_1_Bat_0_PV_0_None_0",
     "WeatherData_FileName": "Gainesville_Irma_OneWeek",
-    "Results_FolderPath": r"C:\Users\ninad\Dropbox\NinadGaikwad_PhD\Gaikwad_Research\Gaikwad_Research_Work\25_SmartCommunitySim\code\Examples\Results_OffGrid_Baseline_WOACSC"
+    "Results_FolderPath": r"C:\Users\ninad\Dropbox\NinadGaikwad_PhD\Gaikwad_Research\Gaikwad_Research_Work\SmartCommunitySim\code\Examples\Results\Results_SingleHouse_OffGrid_MPC"
 }
 
 # -------------------- Weather & Load Data Paths -------------------- #
 data_paths = {
-    "WeatherDataFile_Path": r"C:\Users\ninad\Dropbox\NinadGaikwad_PhD\Gaikwad_Research\Gaikwad_Research_Work\25_SmartCommunitySim\data\WeatherData\ProcessedFiles\Gainesville_Florida\Res_10\Gainesville_2017_To_2017_WeatherData_NSRDB_30minTo10minRes.csv",
-    "LoadDataFolder_Path": r"C:\Users\ninad\Dropbox\NinadGaikwad_PhD\Gaikwad_Research\Gaikwad_Research_Work\25_SmartCommunitySim\data\LoadData\ProcessedFiles\10minute_data_austin_HouseWise",
+    "WeatherDataFile_Path": r"C:\Users\ninad\Dropbox\NinadGaikwad_PhD\Gaikwad_Research\Gaikwad_Research_Work\SmartCommunitySim\data\WeatherData\ProcessedFiles\Gainesville_Florida\Res_10\Gainesville_2017_To_2017_WeatherData_NSRDB_30minTo10minRes.csv",
+    "LoadDataFolder_Path": r"C:\Users\ninad\Dropbox\NinadGaikwad_PhD\Gaikwad_Research\Gaikwad_Research_Work\SmartCommunitySim\data\LoadData\ProcessedFiles\10minute_data_austin_HouseWise",
     
 }
 
@@ -101,9 +102,9 @@ simulation_RewardTerminateTruncate_Functions = {
 
 # ---------------------------- Simulation HVAC/DER Parameters ----------------------------- #
 plant_dynamic_params = {
-    "Lat": -1.0, # Latitude of Community Location (+ -> Northern Hemishphere; - -> Souththern Hemishphere)
-    "Long": -1.0, # Longitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
-    "Ltm": -1.0, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
+    "Lat": 29.65, # Latitude of Community Location (+ -> Northern Hemishphere; - -> Souththern Hemishphere)
+    "Long": -82.32, # Longitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
+    "Ltm": 60, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
     "AC_COP_Factor": 1.0,  # Placeholder for AC Coefficient of Performance [> 0.0][depending on the type of AC, gets multiplied by base COP of 3.33]
     "ACLoad_Power_Factor": 1.0,  # Placeholder for AC Load Power Factor [> 0.0][depending type of AC, get multiplied by base AC power of 3000W]
     "T_AC_SetPoint": 24.0,  # Base AC Temperature Setpoint

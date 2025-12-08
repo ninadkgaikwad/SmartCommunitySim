@@ -7,8 +7,8 @@ import matlab.engine
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
-
 
 ###############################################################################################################
 ## Smart Community Simulator Class - Gymnasium
@@ -32,7 +32,7 @@ class SmartCommunitySimulator(gym.Env):
         # -----------------------------------------------------------------------------------------------------------
         
         # Staring Matlab Engine
-        eng = matlab.engine.start_matlab("-desktop")  # matlab.engine.start_matlab("-desktop")
+        eng = matlab.engine.start_matlab()  # matlab.engine.start_matlab("-desktop")
 
         # -----------------------------------------------------------------------------------------------------------
         ## Adding Legacy Code Paths to Matlab Engine 
@@ -64,6 +64,7 @@ class SmartCommunitySimulator(gym.Env):
         # -----------------------------------------------------------------------------------------------------------
 
         # Creating Results Folder
+        os.makedirs(result_filefolder_paths["Results_FolderPath"], exist_ok=True)
         WeatherData_Results_FolderPath = os.path.join(result_filefolder_paths["Results_FolderPath"], "WeatherData")
         LoadData_Results_FolderPath = os.path.join(result_filefolder_paths["Results_FolderPath"], "LoadData")
         SimulationData_Results_FolderPath = os.path.join(result_filefolder_paths["Results_FolderPath"], "SimulationData")
@@ -127,6 +128,11 @@ class SmartCommunitySimulator(gym.Env):
         self.Community_Params["N_House"] = N_House
         self.Community_Params["N_House_Vector"] = N_House_Vector
 
+        self.Community_Params["N_House_Vector"] = N_House_Vector
+
+        
+        self.History_Flag = self.simulation_params["History_Flag"]  # Captures State Action Histories if True
+
         # MATLAB Engine
         self.eng = eng
         # Time Iter
@@ -170,8 +176,10 @@ class SmartCommunitySimulator(gym.Env):
 
         self._Plant_StateInitialization_Func()
 
-        # Update self with X_k_Plant_History
-        self.X_k_Plant_History = self.X_k_Plant
+        if (self.History_Flag):
+
+            # Update self with X_k_Plant_History
+            self.X_k_Plant_History = self.X_k_Plant
 
         # -----------------------------------------------------------------------------------------------------------
         ## Plant Action Initialization
@@ -184,6 +192,14 @@ class SmartCommunitySimulator(gym.Env):
         # -----------------------------------------------------------------------------------------------------------
 
         self._Plant_DisturbanceGenerator_Func()
+
+        # -----------------------------------------------------------------------------------------------------------
+        ## Plant Energy Price Generator
+        # -----------------------------------------------------------------------------------------------------------
+
+        freq = str(int(round(self.simulation_params["FileRes"] * 60))) + "s"
+
+        self._Plant_generate_normalized_price_period(freq = freq)    
 
         # -----------------------------------------------------------------------------------------------------------
         ## Defining Action and Observation Spaces 
@@ -207,7 +223,7 @@ class SmartCommunitySimulator(gym.Env):
         else:  # User-Defined
 
             # Define action space (continuous control input u)
-            self.action_space = self.SmartCommunity_ActionSpace_Func(self)
+            self.action_space = self.SmartCommunity_ActionSpace_Func()
 
         # -----------------------------------------------------------------------------------------------------------
         ## Initialize self More
@@ -247,7 +263,25 @@ class SmartCommunitySimulator(gym.Env):
         else:  # User-Defined
 
             # Action Computation
-            U_k = self.SmartCommunity_Action_Generator_Func(action)        
+            U_k = matlab.double(self.SmartCommunity_Action_Generator_Func(action).tolist())      
+
+        # -----------------------------------------------------------------------------------------------------------
+        ## Observation (t)/Reward/Termination/Truncation - Generation
+        # -----------------------------------------------------------------------------------------------------------
+           
+        # Observation: Part of the State of System
+        if (self.simulation_params["ObservationSpace_Type"] == "Default"):  # Default
+
+            # Observation Computation (Adhering to Default State Space)
+            observation_k_0 = np.array(self.X_k_Plant)
+
+        else:  # User-Defined
+
+            # Observation Computation
+            observation_k_0 = self.SmartCommunity_Observation_Generator_Func()  
+
+        # Updating self with observation
+        self.Observation_k_0 = observation_k_0
         
         # -----------------------------------------------------------------------------------------------------------
         ## System dynamics
@@ -278,25 +312,31 @@ class SmartCommunitySimulator(gym.Env):
         ## Updating X_k_History
         # -----------------------------------------------------------------------------------------------------------
 
-        self.X_k_Plant_History = np.array(self.X_k_Plant_History)
         X_k_Plus_Plant = np.array(X_k_Plus_Plant)
 
-        self.X_k_Plant_History = np.concatenate((self.X_k_Plant_History[:self.time_iter, :, :], X_k_Plus_Plant), axis=0)
+        if (self.History_Flag):
 
-        # Convert back to `matlab.double`
-        self.X_k_Plant_History = matlab.double(self.X_k_Plant_History.tolist())      
+            self.X_k_Plant_History = np.array(self.X_k_Plant_History)            
+
+            self.X_k_Plant_History = np.concatenate((self.X_k_Plant_History[:self.time_iter, :, :], X_k_Plus_Plant), axis=0)
+
+            # Convert back to `matlab.double`
+            self.X_k_Plant_History = matlab.double(self.X_k_Plant_History.tolist())      
 
         # -----------------------------------------------------------------------------------------------------------
         ## Updating U_k_History
         # -----------------------------------------------------------------------------------------------------------
 
-        self.U_k_History = np.array(self.U_k_History)
         U_k = np.array(U_k)
 
-        self.U_k_History = np.concatenate((self.U_k_History[:self.time_iter, :, :], U_k), axis=0)
+        if (self.History_Flag):
 
-        # Convert back to `matlab.double`
-        self.U_k_History = matlab.double(self.U_k_History.tolist())   
+            self.U_k_History = np.array(self.U_k_History)            
+
+            self.U_k_History = np.concatenate((self.U_k_History[:self.time_iter, :, :], U_k), axis=0)
+
+            # Convert back to `matlab.double`
+            self.U_k_History = matlab.double(self.U_k_History.tolist())   
         
         # -----------------------------------------------------------------------------------------------------------
         ## Updating W_k_Plant
@@ -315,25 +355,25 @@ class SmartCommunitySimulator(gym.Env):
             z = None     
 
         # -----------------------------------------------------------------------------------------------------------
-        ## Observation/Reward/Termination/Truncation - Generation
+        ## Observation (t+1)/Reward/Termination/Truncation - Generation
         # -----------------------------------------------------------------------------------------------------------
            
         # Observation: Part of the State of System
         if (self.simulation_params["ObservationSpace_Type"] == "Default"):  # Default
 
             # Observation Computation (Adhering to Default State Space)
-            observation = np.array(self.X_k_Plant)
+            observation_k_1 = np.array(self.X_k_Plant)
 
         else:  # User-Defined
 
             # Observation Computation
-            observation = self.SmartCommunity_Observation_Generator_Func()
+            observation_k_1 = self.SmartCommunity_Observation_Generator_Func()
 
         # Updating self with observation
-        self.Observation = observation
+        self.Observation_k_1 = observation_k_1
 
         # Reward: Encourage reaching the target
-        reward = self.SmartCommunity_Reward_Func()
+        reward = self.SmartCommunity_Reward_Func(observation_k_1, action, observation_k_0)
 
         # Termination condition (Episode terminated due to internal reasons)
         terminated = self.SmartCommunity_Termination_Func()
@@ -341,56 +381,72 @@ class SmartCommunitySimulator(gym.Env):
         # Truncation Codition (Episode truncated due to external reasons)
         truncated = self.SmartCommunity_Truncation_Func()  
 
-        return observation, reward, terminated, truncated, {}
+        return observation_k_1, reward, terminated, truncated, {}
 
     def reset(self, seed=None, options=None):
         """
         Resets the environment for a new episode.
 
+        Uses the provided seed (if any) to sample a random starting
+        time index between 0 and 90% of the total simulation steps.
+
         Returns:
             observation (np.array): Initial state.
             info (dict): Additional info (empty here).
         """
-        # Resetting Time Iter
-        self.time_iter = 0
+        # Let Gymnasium handle seeding
+        super().reset(seed=seed)
 
-        # -----------------------------------------------------------------------------------------------------------
-        ## Plant State Initialization
-        # -----------------------------------------------------------------------------------------------------------
+        # ----------------------------------------------------------------------------------
+        # Choose a random starting time index: 0 <= start_step < 0.9 * Total_Steps
+        # ----------------------------------------------------------------------------------
+        total_steps = int(self.Simulation_Steps_Total)
 
+        if total_steps <= 0:
+            # Fallback: nothing to sample from
+            start_step = 0
+        else:
+            max_start = max(1, int(0.9 * total_steps))  # ensure at least 1
+            # self.np_random is set by super().reset(seed=seed)
+            start_step = int(self.np_random.integers(low=0, high=max_start))
+
+        # Set internal time iterator to this random offset
+        self.time_iter = start_step
+
+        # ----------------------------------------------------------------------------------
+        # Plant State Initialization
+        # ----------------------------------------------------------------------------------
         self._Plant_StateInitialization_Func()
 
-        # Update self with X_k_Plant_History
-        self.X_k_Plant_History = self.X_k_Plant
+        if (self.History_Flag): 
 
-        # -----------------------------------------------------------------------------------------------------------
-        ## Plant Action Initialization
-        # -----------------------------------------------------------------------------------------------------------
+            # Initialize state history with current state
+            self.X_k_Plant_History = self.X_k_Plant
 
+        # ----------------------------------------------------------------------------------
+        # Plant Action Initialization
+        # ----------------------------------------------------------------------------------
         self._Plant_ActionHistoryInitialization_Func()
 
-        # -----------------------------------------------------------------------------------------------------------
-        ## Plant Disturbance Initialization
-        # -----------------------------------------------------------------------------------------------------------
-
+        # ----------------------------------------------------------------------------------
+        # Plant Disturbance Initialization
+        #   - This uses self.time_iter, so it will pull Ws/T_am/GHI/DNI and load data
+        #     corresponding to the sampled start_step.
+        # ----------------------------------------------------------------------------------
         self._Plant_DisturbanceGenerator_Func()
 
-        # -----------------------------------------------------------------------------------------------------------
-        ## Observation - Generation
-        # -----------------------------------------------------------------------------------------------------------
-           
-        # Observation: Part of the State of System
-        if (self.simulation_params["ObservationSpace_Type"] == "Default"):  # Default
-
+        # ----------------------------------------------------------------------------------
+        # Observation - Generation
+        # ----------------------------------------------------------------------------------
+        if self.simulation_params["ObservationSpace_Type"] == "Default":
             # Observation Computation (Adhering to Default State Space)
             observation = np.array(self.X_k_Plant)
-
-        else:  # User-Defined
-
-            # Observation Computation
+        else:
+            # User-Defined
             observation = self.SmartCommunity_Observation_Generator_Func()
 
         return observation, {}
+
     
     def SmartCommunity_ObservationSpace_Func(self):
         """
@@ -428,7 +484,7 @@ class SmartCommunitySimulator(gym.Env):
 
         return Action
     
-    def SmartCommunity_Reward_Func(self):
+    def SmartCommunity_Reward_Func(self, observation_k_1, action, observation_k_0):
         """
         Computes Reward for the Environment. (User-Defined)
         """
@@ -439,7 +495,7 @@ class SmartCommunitySimulator(gym.Env):
 
         else:
         
-            Reward = self.Reward_Function(self)
+            Reward = self.Reward_Function(self, observation_k_1, action, observation_k_0)
 
         return Reward
 
@@ -517,11 +573,18 @@ class SmartCommunitySimulator(gym.Env):
         Simulation_Params_mat = self.simulation_params
 
         # Call the MATLAB function
-        self.eng.SmartCommunity_PerformanceComputer_Func(X_k_Plant_History_mat, U_k_History_mat, E_LoadData_mat, E_Load_Desired_mat, HEMSWeatherData_Output_mat, HEMSPlant_Params_mat, Community_Params_mat, result_filefolder_paths_mat, Simulation_Params_mat, nargout=0)
+        Plant_Performance  = self.eng.SmartCommunity_PerformanceComputer_Func(X_k_Plant_History_mat, U_k_History_mat, E_LoadData_mat, E_Load_Desired_mat, HEMSWeatherData_Output_mat, HEMSPlant_Params_mat, Community_Params_mat, result_filefolder_paths_mat, Simulation_Params_mat)
 
-        return None
+        # Plant_Performance  = self.eng.SmartCommunity_PerformanceComputer_Func(X_k_Plant_History_mat, U_k_History_mat, E_LoadData_mat, E_Load_Desired_mat, HEMSWeatherData_Output_mat, HEMSPlant_Params_mat, Community_Params_mat, result_filefolder_paths_mat, Simulation_Params_mat, nargout=0)
 
-    def render(self):
+        ########################## Update ############################
+
+        # Convert MATLAB Performance Struct to Python DF and svae as CSV
+        Performance_DF = self._Plant_Performance_DF(Plant_Performance, result_filefolder_paths_mat)
+
+        return Performance_DF
+
+    def render(self, minimal="Yes"):
         """
         Renders the environment.
         """
@@ -541,7 +604,8 @@ class SmartCommunitySimulator(gym.Env):
         result_filefolder_paths_mat = self.result_filefolder_paths
 
         # Call the MATLAB function
-        self.eng.SmartCommunity_FigurePlotter_Func(X_k_Plant_History_mat, U_k_History_mat, E_LoadData_mat, E_Load_Desired_mat, HEMSWeatherData_Output_mat, HEMSPlant_Params_mat, Community_Params_mat, Simulation_Params_mat, result_filefolder_paths_mat, nargout=0)
+        self.eng.SmartCommunity_FigurePlotter_Func(X_k_Plant_History_mat, U_k_History_mat, E_LoadData_mat, E_Load_Desired_mat, HEMSWeatherData_Output_mat, HEMSPlant_Params_mat, Community_Params_mat, Simulation_Params_mat, result_filefolder_paths_mat, minimal, nargout=0)
+
 
         return None
 
@@ -640,8 +704,10 @@ class SmartCommunitySimulator(gym.Env):
         # Call the MATLAB function
         U_k_History = self.eng.HEMS_Plant_ActionHistoryInitialization_Func(simulation_params_mat, community_params_mat)
 
-        # Updating self
-        self.U_k_History = U_k_History
+        if (self.History_Flag):
+
+            # Updating self
+            self.U_k_History = U_k_History
 
         return None
     
@@ -668,5 +734,168 @@ class SmartCommunitySimulator(gym.Env):
         self.W_k_Plant = W_k_Plant
 
         return None
+    
+    def _Plant_Performance_DF(self, Plant_Performance, result_filefolder_paths_mat):
+
+        ########################## Update ############################
+
+        # ------------------------------------------------------------
+        # 1. Extract fields from MATLAB struct returned to Python
+        # ------------------------------------------------------------
+        perf = Plant_Performance   # MATLAB struct proxy
+
+        perf_dict = {
+            "AC_Death_AvgPerDay": perf["AC_Death_AvgPerDay"],
+            "Percentage_All_Served": perf["Percentage_All_Served"],
+            "Percentage_C_Served": perf["Percentage_C_Served"],
+            "TRM": perf["TRM"],
+            "LRM_C": perf["LRM_C"],
+            "LRM_O": perf["LRM_O"],
+
+            "AC_Death_AvgPerDay_Community": perf["AC_Death_AvgPerDay_Community"],
+            "Percentage_All_Served_Community": perf["Percentage_All_Served_Community"],
+            "Percentage_C_Served_Community": perf["Percentage_C_Served_Community"],
+            "TRM_Community": perf["TRM_Community"],
+            "LRM_C_Community": perf["LRM_C_Community"],
+            "LRM_O_Community": perf["LRM_O_Community"],
+        }
+
+        # ------------------------------------------------------------
+        # 2. Helper: unwrap MATLAB values (matlab.double) into scalars
+        # ------------------------------------------------------------
+        def unwrap(val):
+            # matlab.double comes as nested lists: [[value]]
+            if isinstance(val, (list, tuple)) and len(val) == 1:
+                inner = val[0]
+                if isinstance(inner, (list, tuple)) and len(inner) == 1:
+                    return inner[0]  # extract scalar
+            return val  # fallback
+
+        # Apply unwrap to every value
+        perf_dict = {k: unwrap(v) for k, v in perf_dict.items()}
+
+        # ------------------------------------------------------------
+        # 3. Build DataFrame
+        # ------------------------------------------------------------
+        df_perf = pd.DataFrame([perf_dict])
+
+        # ------------------------------------------------------------
+        # 4. Transpose
+        # ------------------------------------------------------------
+        df_perf_T = df_perf.transpose()
+
+        # ------------------------------------------------------------
+        # 5. Reset index & rename columns
+        # ------------------------------------------------------------
+        df_perf_T = df_perf_T.reset_index()
+        df_perf_T.columns = ["Metric", "Value"]
+
+        # ------------------------------------------------------------
+        # 6. Final DataFrame ready to use
+        # ------------------------------------------------------------
+        print(df_perf_T)
+
+        # ------------------------------------------------------------
+        # 6. Save Performance Dataframe
+        # ------------------------------------------------------------
+
+        csv_file_path = os.path.join(
+            result_filefolder_paths_mat["Results_FolderPath"],
+            "PerformanceData",
+            result_filefolder_paths_mat["SimulationPerformanceData_FileName"] + ".csv"
+        )
+
+        df_perf_T.to_csv(csv_file_path, index=False)
+
+        return df_perf_T
+    
+        
+
+
+    def _Plant_daily_base_shape(self, time_decimal: np.ndarray) -> np.ndarray:
+        """
+        Base normalized daily curve (0–1) based only on Time of Day.
+        """
+        t = time_decimal % 24.0
+
+        # Two-peak daily curve (midday + evening)
+        mid = np.exp(-0.5 * ((t - 14.0) / 2.5) ** 2)
+        eve = np.exp(-0.5 * ((t - 19.0) / 1.5) ** 2)
+
+        raw = 0.2 + 0.5 * mid + 0.7 * eve
+        raw = (raw - raw.min()) / (raw.max() - raw.min())
+        return raw
+
+
+    def _Plant_generate_normalized_price_period(self,
+        freq: str = "5min",       # <--- USER CONTROLLED
+        noise_std: float = 0.05,
+        seed: int | None = None,
+    ):
+        """
+        Generate normalized price values over a custom simulation window.
+
+        Output array columns:
+            [Day, Month, Year, TimeDecimal, Value]
+
+        Parameters
+        ----------
+        simulation_period : dict
+            Required keys:
+                StartYear, StartMonth, StartDay, StartTime
+                EndYear, EndMonth, EndDay, EndTime
+        freq : str
+            Pandas-compatible frequency string ("5min", "15min", "1H", "30s", etc.)
+        noise_std : float
+            Gaussian noise standard deviation.
+        seed : int or None
+            RNG seed.
+        """
+
+        rng = np.random.default_rng(seed)
+
+        simulation_period = self.simulation_period
+
+        # ---- Build timestamp range ----
+        start_ts = f"{simulation_period['StartYear']}-{simulation_period['StartMonth']:02d}-{simulation_period['StartDay']:02d} {simulation_period['StartTime']}:00"
+        end_ts   = f"{simulation_period['EndYear']}-{simulation_period['EndMonth']:02d}-{simulation_period['EndDay']:02d} {simulation_period['EndTime']}:00"
+
+        # Handle “24.0” end times (meaning end-of-day -> exclusive)
+        inclusive_setting = "left" if simulation_period["EndTime"] == 24 else "right"
+
+        dt_index = pd.date_range(
+            start=start_ts,
+            end=end_ts,
+            freq=freq,
+            inclusive=inclusive_setting
+        )
+
+        # ---- Extract calendar fields ----
+        day = dt_index.day.values
+        month = dt_index.month.values
+        year = dt_index.year.values
+
+        # ---- Decimal hour ----
+        time_decimal = (
+            dt_index.hour +
+            dt_index.minute / 60.0 +
+            dt_index.second / 3600.0
+        )
+
+        # ---- Base price + noise ----
+        base = self._Plant_daily_base_shape(time_decimal)
+        noise = rng.normal(loc=0.0, scale=noise_std, size=len(base))
+        value = np.clip(base + noise, 0.0, 1.0)
+
+        # ---- Final array ----
+        Energy_Price = np.column_stack([day, month, year, time_decimal, value])
+
+        # ---- Updating self ----
+        self.Energy_Price = Energy_Price
+
+        print("Done - Generating Energy Price Data")
+        
+        return None
+
 
 

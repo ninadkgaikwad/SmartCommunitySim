@@ -36,6 +36,7 @@ simulation_params = {
     "Single_House_Plotting_Index": 1,  # House index for single-house plotting
     "ObservationSpace_Type": "Default",  # Default ; User-Defined
     "ActionSpace_Type": "Default",  # Default ; User-Defined
+    "History_Flag": True,  # Captures State Action Histories if True
 }
 
 # -------------------- Community Specification -------------------- #
@@ -99,9 +100,9 @@ simulation_RewardTerminateTruncate_Functions = {
 
 # ---------------------------- Simulation HVAC/DER Parameters ----------------------------- #
 plant_dynamic_params = {
-    "Lat": -1.0, # Latitude of Community Location (+ -> Northern Hemishphere; - -> Souththern Hemishphere)
-    "Long": -1.0, # Longitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
-    "Ltm": -1.0, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
+    "Lat": 29.65, # Latitude of Community Location (+ -> Northern Hemishphere; - -> Souththern Hemishphere)
+    "Long": -82.32, # Longitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
+    "Ltm": 60, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
     "AC_COP_Factor": 1.0,  # Placeholder for AC Coefficient of Performance [> 0.0][depending on the type of AC, gets multiplied by base COP of 3.33]
     "ACLoad_Power_Factor": 1.0,  # Placeholder for AC Load Power Factor [> 0.0][depending type of AC, get multiplied by base AC power of 3000W]
     "T_AC_SetPoint": 24.0,  # Base AC Temperature Setpoint

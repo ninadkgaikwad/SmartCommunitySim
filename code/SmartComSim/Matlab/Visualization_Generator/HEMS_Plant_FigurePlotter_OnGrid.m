@@ -267,8 +267,8 @@ end
     
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-%ylim([-6 25]);
-xlim([0 170]);
+%%ylim([-6 25]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P2, 'axes');
 xrule_1 = ax1.XAxis;
@@ -298,8 +298,8 @@ P2 = plot(HoursVector,EToP_Converter*Community_PV_E_Available(1:Len_Hours_Vector
     
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-%ylim([-6 25]);
-xlim([0 170]);
+%%ylim([-6 25]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P2, 'axes');
 xrule_1 = ax1.XAxis;
@@ -336,8 +336,8 @@ P4 = plot(HoursVector,0*ones(Len_Hours_Vector,1),'--k','LineWidth',1);
     
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-%ylim([-5 115]);
-xlim([0 170]);
+%%ylim([-5 115]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P2, 'axes');
 xrule_1 = ax1.XAxis;
@@ -356,8 +356,8 @@ for jj=union(N_PV_Bat_Only_Indices,N_Bat_Only_Indices)
 
 end
     
-%ylim([-5 115]);
-xlim([0 170]);
+%%ylim([-5 115]);
+%xlim([0 170]);
 ax1 = ancestor(P4, 'axes');
 yrule_2 = ax1.YAxis;
 yrule_2(2).FontSize=14; 
@@ -386,8 +386,8 @@ P4 = plot(HoursVector,0*ones(Len_Hours_Vector,1),'--k','LineWidth',1);
 
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-ylim([-5 115]);
-xlim([0 170]);
+%ylim([-5 115]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P2, 'axes');
 xrule_1 = ax1.XAxis;
@@ -402,8 +402,8 @@ yyaxis right
 P5 = plot(HoursVector,EToP_Converter*Community_Bat_E_Charging(1:Len_Hours_Vector,1,1),'-r','LineWidth',2);
 P6 = plot(HoursVector,EToP_Converter*Community_Bat_E_Discharging(1:Len_Hours_Vector,1,1),'-g','LineWidth',2);
 
-%ylim([-5 115]);
-xlim([0 170]);
+%%ylim([-5 115]);
+%xlim([0 170]);
 ax1 = ancestor(P4, 'axes');
 yrule_2 = ax1.YAxis;
 yrule_2(2).FontSize=14; 
@@ -433,8 +433,8 @@ P4 = plot(HoursVector,T_AC_min*ones(Len_Hours_Vector,1),'--k','LineWidth',1);
 
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-%ylim([-6 25]);
-xlim([0 170]);
+%%ylim([-6 25]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P2, 'axes');
 xrule_1 = ax1.XAxis;
@@ -464,8 +464,8 @@ P4 = plot(HoursVector,T_AC_min*ones(Len_Hours_Vector,1),'--k','LineWidth',1.5);
 
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-%ylim([-6 25]);
-xlim([0 170]);
+%%ylim([-6 25]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P2, 'axes');
 xrule_1 = ax1.XAxis;
@@ -500,8 +500,8 @@ end
 
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-%ylim([-6 25]);
-xlim([0 170]);
+%%ylim([-6 25]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P2, 'axes');
 xrule_1 = ax1.XAxis;
@@ -530,8 +530,8 @@ end
 
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-%ylim([-6 25]);
-xlim([0 170]);
+%%ylim([-6 25]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P3, 'axes');
 xrule_1 = ax1.XAxis;
@@ -559,8 +559,8 @@ end
 
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-%ylim([-6 25]);
-xlim([0 170]);
+%%ylim([-6 25]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P4, 'axes');
 xrule_1 = ax1.XAxis;
@@ -589,8 +589,8 @@ P5 = plot(HoursVector,EToP_Converter*Community_Bat_E_OtherLoad_Actual(1:Len_Hour
 
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-%ylim([-6 25]);
-xlim([0 170]);
+%%ylim([-6 25]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P2, 'axes');
 xrule_1 = ax1.XAxis;
@@ -615,8 +615,8 @@ P6 = plot(HoursVector,EToP_Converter*Community_Bat_E_ACLoad_Actual(1:Len_Hours_V
 
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-%ylim([-6 25]);
-xlim([0 170]);
+%%ylim([-6 25]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P3, 'axes');
 xrule_1 = ax1.XAxis;
@@ -640,8 +640,8 @@ P7 = plot(HoursVector,EToP_Converter*Community_Bat_E_TotalLoad_Actual(1:Len_Hour
     
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-%ylim([-6 25]);
-xlim([0 170]);
+%%ylim([-6 25]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P4, 'axes');
 xrule_1 = ax1.XAxis;
@@ -669,8 +669,8 @@ P4 = plot(HoursVector,EToP_Converter*Community_Bat_E_TotalLoad_Desired(1:Len_Hou
     
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-%ylim([-6 25]);
-xlim([0 170]);
+%%ylim([-6 25]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P4, 'axes');
 xrule_1 = ax1.XAxis;
@@ -703,8 +703,8 @@ end
     
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-ylim([0 2]);
-xlim([0 170]);
+%ylim([0 2]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P2, 'axes');
 xrule_1 = ax1.XAxis;
@@ -732,8 +732,8 @@ P3 = plot(HoursVector,Community_Bat_Controller_Discharging_Desired(1:Len_Hours_V
   
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-%ylim([0 2]);
-xlim([0 170]);
+%%ylim([0 2]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P2, 'axes');
 xrule_1 = ax1.XAxis;
@@ -767,8 +767,8 @@ end
     
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-ylim([0 2]);
-xlim([0 170]);
+%ylim([0 2]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P2, 'axes');
 xrule_1 = ax1.XAxis;
@@ -796,8 +796,8 @@ P3 = plot(HoursVector,Community_AC_Controller_TurnOn_Actual(1:Len_Hours_Vector,1
 
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-%ylim([0 2]);
-xlim([0 170]);
+%%ylim([0 2]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P2, 'axes');
 xrule_1 = ax1.XAxis;
@@ -826,8 +826,8 @@ P4 = plot(HoursVector,Community_AC_P_StartUp_Used(1:Len_Hours_Vector,1,1),'-b','
 
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-%ylim([0 2]);
-xlim([0 170]);
+%%ylim([0 2]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P2, 'axes');
 xrule_1 = ax1.XAxis;
@@ -860,8 +860,8 @@ P4 = plot(HoursVector,EToP_Converter*House_PV_E_UnUsed(1:Len_Hours_Vector,1,Sing
 
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-%ylim([-6 25]);
-xlim([0 170]);
+%%ylim([-6 25]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P2, 'axes');
 xrule_1 = ax1.XAxis;
@@ -894,8 +894,8 @@ P4 = plot(HoursVector,0*ones(Len_Hours_Vector,1),'--k','LineWidth',1);
     
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-%ylim([-5 115]);
-xlim([0 170]);
+%%ylim([-5 115]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P2, 'axes');
 xrule_1 = ax1.XAxis;
@@ -910,8 +910,8 @@ yyaxis right
 P5 = plot(HoursVector,EToP_Converter*House_Bat_E_Charging(1:Len_Hours_Vector,1,Single_House_Plotting_Index),'-g','LineWidth',1);
 P6 = plot(HoursVector,EToP_Converter*House_Bat_E_Discharging(1:Len_Hours_Vector,1,Single_House_Plotting_Index),'-r','LineWidth',1);
 
-%ylim([-5 115]);
-xlim([0 170]);
+%%ylim([-5 115]);
+%xlim([0 170]);
 ax1 = ancestor(P4, 'axes');
 yrule_2 = ax1.YAxis;
 yrule_2(2).FontSize=14; 
@@ -937,8 +937,8 @@ P4 = plot(HoursVector,T_AC_min*ones(Len_Hours_Vector,1),'--k','LineWidth',1);
 
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-%ylim([-6 25]);
-xlim([0 170]);
+%%ylim([-6 25]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P2, 'axes');
 xrule_1 = ax1.XAxis;
@@ -968,8 +968,8 @@ P5 = plot(HoursVector,EToP_Converter*House_Bat_E_OtherLoad_Actual(1:Len_Hours_Ve
 
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-%ylim([-6 25]);
-xlim([0 170]);
+%%ylim([-6 25]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P2, 'axes');
 xrule_1 = ax1.XAxis;
@@ -994,8 +994,8 @@ P6 = plot(HoursVector,EToP_Converter*House_Bat_E_ACLoad_Actual(1:Len_Hours_Vecto
 
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-%ylim([-6 25]);
-xlim([0 170]);
+%%ylim([-6 25]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P3, 'axes');
 xrule_1 = ax1.XAxis;
@@ -1019,8 +1019,8 @@ P7 = plot(HoursVector,EToP_Converter*House_Bat_E_TotalLoad_Actual(1:Len_Hours_Ve
 
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-%ylim([-6 25]);
-xlim([0 170]);
+%%ylim([-6 25]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P4, 'axes');
 xrule_1 = ax1.XAxis;
@@ -1047,8 +1047,8 @@ P3 = plot(HoursVector,House_Bat_Controller_Discharging_Desired(1:Len_Hours_Vecto
 
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-ylim([0 2]);
-xlim([0 170]);
+%ylim([0 2]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P2, 'axes');
 xrule_1 = ax1.XAxis;
@@ -1080,8 +1080,8 @@ P3 = plot(HoursVector,House_AC_Controller_TurnOn_Actual(1:Len_Hours_Vector,1,Sin
     
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-ylim([0 2]);
-xlim([0 170]);
+%ylim([0 2]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P2, 'axes');
 xrule_1 = ax1.XAxis;
@@ -1128,8 +1128,8 @@ end
     
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-%ylim([-6 25]);
-xlim([0 170]);
+%%ylim([-6 25]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P2, 'axes');
 xrule_1 = ax1.XAxis;
@@ -1160,8 +1160,8 @@ P5 = plot(HoursVector,EToP_Converter*(Community_Bat_E_TotalLoad_Desired(1:Len_Ho
 
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-%ylim([-6 25]);
-xlim([0 170]);
+%%ylim([-6 25]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P2, 'axes');
 xrule_1 = ax1.XAxis;
@@ -1195,8 +1195,8 @@ for jj=union(N_PV_Bat_Only_Indices,N_Bat_Only_Indices)
 
 end
     
-%ylim([-5 115]);
-xlim([0 170]);
+%%ylim([-5 115]);
+%xlim([0 170]);
 ax1 = ancestor(P5, 'axes');
 yrule_2 = ax1.YAxis;
 yrule_2(2).FontSize=14; 
@@ -1224,8 +1224,8 @@ P4 = plot(HoursVector,EToP_Converter*Grid_Energy_Community(1:Len_Hours_Vector,1,
 
 xticks(X_Ticks_Vector)
 xticklabels(X_Tick_Labels_Cell)
-%ylim([-6 25]);
-xlim([0 170]);
+%%ylim([-6 25]);
+%xlim([0 170]);
 xlabel('Time ($hours$)','Interpreter','latex','FontSize', 14);
 ax1 = ancestor(P2, 'axes');
 xrule_1 = ax1.XAxis;

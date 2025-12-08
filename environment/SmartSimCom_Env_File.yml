@@ -1,0 +1,43 @@
+name: SmartComSim_Base
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  # --- Core ---
+  - python=3.12.3
+  - pip
+
+  # --- Numerical / Data ---
+  - numpy
+  - pandas
+  - scipy
+  - matplotlib
+  - seaborn
+
+  # --- Jupyter (optional but handy) ---
+  - jupyterlab
+  - ipykernel
+
+  # --- RL / ML stack base (PyTorch from conda) ---
+  - pytorch>=2.3
+  - gymnasium>=0.29
+
+  # --- Logging / misc ---
+  - tensorboard
+  - tqdm
+
+  # --- Install packages that are best managed via pip ---
+  - pip:
+      # RL algorithms (SAC, TD3, PPO, etc.)
+      - "stable-baselines3[extra]"
+
+      # CasADi (nonlinear optimization)
+      - casadi
+
+      # Gurobi
+      - gurobipy
+
+      # Optional: useful utilities
+      - ipywidgets
+      - rich
