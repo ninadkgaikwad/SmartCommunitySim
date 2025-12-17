@@ -29,6 +29,8 @@ for p in paths_to_add:
 from Exp_MPC_RL_Helpers import *
 from Exp_MPC_Solver_Options import *
 
+from MPC_Opt_Model_Diagnostics_Module import *
+
 ###############################################################################################################
 ## Experiment MPC Optimization Formulations - Custom Functions
 ###############################################################################################################
@@ -166,6 +168,7 @@ def Exp_SingleMultiHouse_OffGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_dat
     U_ac_Init    = reshaped["U_ac_Init"]
 
     T_am         = reshaped["T_am"]
+    Ws           = reshaped["Ws"]
     E_PV         = reshaped["E_PV"]          # now properly reshaped
     T_sol_w      = reshaped["T_sol_w"]
     T_sol_r      = reshaped["T_sol_r"]
@@ -183,6 +186,8 @@ def Exp_SingleMultiHouse_OffGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_dat
     Nh_pv   = N_PV_Bat + N_PV
 
     Continuous = False
+
+    Model_Diagnostics = False
 
     m = gp.Model("MPC_community")
 
@@ -229,10 +234,10 @@ def Exp_SingleMultiHouse_OffGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_dat
                         lb=0.0, ub=1.0,
                         vtype=GRB.CONTINUOUS, name="theta_bat")  # or BINARY
         
-        f_on  = m.addMVar(Nh_bat * N, lb=0.0, ub=1.0,
+        f_on  = m.addMVar(Nh_all * N, lb=0.0, ub=1.0,
                     vtype=GRB.CONTINUOUS, name="f_on")  # or BINARY
         
-        f_off = m.addMVar(Nh_bat * N, lb=0.0, ub=1.0,
+        f_off = m.addMVar(Nh_all * N, lb=0.0, ub=1.0,
                     vtype=GRB.CONTINUOUS, name="f_off")  # or BINARY
 
     else:
@@ -252,13 +257,13 @@ def Exp_SingleMultiHouse_OffGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_dat
         )
 
         f_on = m.addMVar(
-            Nh_bat * N,
+            Nh_all * N,
             vtype=GRB.BINARY,
             name="f_on"
         )
 
         f_off = m.addMVar(
-            Nh_bat * N,
+            Nh_all * N,
             vtype=GRB.BINARY,
             name="f_off"
         )
@@ -269,7 +274,7 @@ def Exp_SingleMultiHouse_OffGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_dat
 
     for i in range(Nh_pv * N):
         lb_list.append(0.0)
-        ub_list.append(E_PV_Reshaped[i,1])
+        ub_list.append(E_PV_Reshaped[i,0])
 
     g = m.addMVar(Nh_pv * N, lb=lb_list, ub=ub_list,
                 vtype=GRB.CONTINUOUS, name="g")
@@ -280,7 +285,7 @@ def Exp_SingleMultiHouse_OffGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_dat
 
     for i in range(Nh_all * N):
         lb_list.append(0.0)
-        ub_list.append(E_l_Reshaped[i,1])
+        ub_list.append(E_l_Reshaped[i,0])
 
     E_load = m.addMVar(Nh_all * N, lb=lb_list, ub=ub_list,
                     vtype=GRB.CONTINUOUS, name="E_load")
@@ -295,7 +300,7 @@ def Exp_SingleMultiHouse_OffGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_dat
 
     for i in range(Nh_all * N):
         lb_list.append(0.0)
-        ub_list.append(E_Load_Critical_Reshaped[i,1])
+        ub_list.append(E_Load_Critical_Reshaped[i,0])
 
     eps_l = m.addMVar(Nh_all * N, lb=lb_list, ub=ub_list,
                     vtype=GRB.CONTINUOUS, name="eps_l")
@@ -370,14 +375,14 @@ def Exp_SingleMultiHouse_OffGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_dat
             if (k == 0):
 
                 m.addConstr(
-                    T_wall[i] == A_1 * T_wall_Init[h] + A_2 * T_h_Init[h] + B_1 * T_sol_w[k],
+                    T_wall[i] == A_1 * T_wall_Init[h,0] + A_2 * T_h_Init[h,0] + B_1 * T_sol_w[k,0],
                     name=f"T1_wall_h{h}_k{k}"
                 )
 
             else:
 
                 m.addConstr(
-                    T_wall[i] == A_1 * T_wall[i-1] + A_2 * T_ave[i-1] + B_1 * T_sol_w[k],
+                    T_wall[i] == A_1 * T_wall[i-1] + A_2 * T_ave[i-1] + B_1 * T_sol_w[k,0],
                     name=f"T1_wall_h{h}_k{k}"
                 )
 
@@ -408,15 +413,15 @@ def Exp_SingleMultiHouse_OffGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_dat
             if (k == 0):
 
                 rhs = (
-                    A_3 * T_wall_Init[h] +
-                    A_4 * T_h_Init[h]  +
-                    A_5 * T_attic_Init[h]  +
-                    A_6 * T_im_Init[h]   +
-                    B_2 * T_am[k]   +
+                    A_3 * T_wall_Init[h,0] +
+                    A_4 * T_h_Init[h,0]  +
+                    A_5 * T_attic_Init[h,0]  +
+                    A_6 * T_im_Init[h,0]   +
+                    B_2 * T_am[k,0]   +
                     B_3 * Q_ihl     -
                     B_4 * Q_ac * U_ac[i] +
-                    B_5 * Q_venti_Const * (T_am[k] - T_h_Init[h]) +
-                    B_6 * Q_infil_Const * Ws[k] * (T_am[k] - T_h_Init[h])
+                    B_5 * Q_venti_Const * (T_am[k,0] - T_h_Init[h,0]) +
+                    B_6 * Q_infil_Const * Ws[k,0] * (T_am[k,0] - T_h_Init[h,0])
                 )
 
                 m.addConstr(
@@ -434,8 +439,8 @@ def Exp_SingleMultiHouse_OffGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_dat
                     B_2 * T_am[k]   +
                     B_3 * Q_ihl     -
                     B_4 * Q_ac * U_ac[i] +
-                    B_5 * Q_venti_Const * (T_am[k] - T_ave[i-1]) +
-                    B_6 * Q_infil_Const * Ws[k] * (T_am[k] - T_ave[i-1])
+                    B_5 * Q_venti_Const * (T_am[k,0] - T_ave[i-1]) +
+                    B_6 * Q_infil_Const * Ws[k,0] * (T_am[k,0] - T_ave[i-1])
                 )
 
                 m.addConstr(
@@ -487,9 +492,9 @@ def Exp_SingleMultiHouse_OffGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_dat
             if (k == 0):
 
                 rhs = (
-                    A_7 * T_h_Init[h] +
-                    A_8 * T_attic_Init[h] +
-                    B_7 * T_sol_r[k]
+                    A_7 * T_h_Init[h,0] +
+                    A_8 * T_attic_Init[h,0] +
+                    B_7 * T_sol_r[k,0]
                 )
 
                 m.addConstr(
@@ -502,7 +507,7 @@ def Exp_SingleMultiHouse_OffGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_dat
                 rhs = (
                     A_7 * T_ave[i-1] +
                     A_8 * T_att[i-1] +
-                    B_7 * T_sol_r[k]
+                    B_7 * T_sol_r[k,0]
                 )
 
                 m.addConstr(
@@ -548,9 +553,9 @@ def Exp_SingleMultiHouse_OffGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_dat
             if (k == 0):
 
                 rhs = (
-                    A_9  * T_h_Init[h] +
-                    A_10 * T_im_Init[h]  +
-                    B_8  * Q_solar[k]
+                    A_9  * T_h_Init[h,0] +
+                    A_10 * T_im_Init[h,0]  +
+                    B_8  * Q_solar[k,0]
                 )
 
                 m.addConstr(
@@ -563,7 +568,7 @@ def Exp_SingleMultiHouse_OffGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_dat
                 rhs = (
                     A_9  * T_ave[i-1] +
                     A_10 * T_im[i-1]  +
-                    B_8  * Q_solar[k]
+                    B_8  * Q_solar[k,0]
                 )
 
                 m.addConstr(
@@ -609,7 +614,7 @@ def Exp_SingleMultiHouse_OffGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_dat
             if (k == 0):
 
                 m.addConstr(
-                    E_bat[i] == E_bat_Init[b] - Gamma[i] * (Gamma_Discharging*Simulation_StepSize),
+                    E_bat[i] == E_bat_Init[b,0] - Gamma[i] * (Gamma_Discharging*Simulation_StepSize),
                     name=f"Ebat_dyn_b{b}_k{k}"
                 )
 
@@ -662,7 +667,7 @@ def Exp_SingleMultiHouse_OffGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_dat
             if (k == 0):
 
                 m.addConstr(
-                    U_ac[i] - U_ac_Init[h] - f_on[i] + f_off[i] == 0.0,
+                    U_ac[i] - U_ac_Init[h,0] - f_on[i] + f_off[i] == 0.0,
                     name=f"HVAC_switch_dyn_h{h}_k{k}"
                 )
 
@@ -743,7 +748,7 @@ def Exp_SingleMultiHouse_OffGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_dat
             lhs -= theta_bat[i] * P_bat
 
         # RHS: total PV energy available over step k
-        PV_available_k = E_PV_Reshaped [k,1] * (N_PV + N_PV_Bat) * (1/Simulation_StepSize)
+        PV_available_k = E_PV_Reshaped [k,0] * (N_PV + N_PV_Bat) * (1/Simulation_StepSize)
 
         m.addConstr(
             lhs <= PV_available_k,
@@ -781,7 +786,7 @@ def Exp_SingleMultiHouse_OffGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_dat
 
             i = h * N + k
 
-            E_cri_i = E_Load_Critical_Reshaped[i, 1]
+            E_cri_i = E_Load_Critical_Reshaped[i, 0]
 
             # E_load(h,k) + eps_l(h,k) >= E_cri(h,k)
             m.addConstr(
@@ -799,6 +804,14 @@ def Exp_SingleMultiHouse_OffGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_dat
                 Gamma[i] - theta_bat[i] <= Epsilon,
                 name=f"Gamma_theta_link_b{b}_k{k}"
             )
+
+    # =================================================================================
+    # Optimization Problem - Model Diagnostics
+    # =================================================================================
+
+    if (Model_Diagnostics):
+
+        Exp_GurobiPy_Model_Diagnostic(m, "SingleMultiHouse_OffGrid_Gurobi_MPC_Model.txt")
 
     # =================================================================================
     # Optimization Problem - Solve
@@ -1010,6 +1023,7 @@ def Exp_SingleMultiHouse_OnGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_data
     U_ac_Init    = reshaped["U_ac_Init"]
 
     T_am         = reshaped["T_am"]
+    Ws           = reshaped["Ws"]
     E_PV         = reshaped["E_PV"]          # now properly reshaped
     T_sol_w      = reshaped["T_sol_w"]
     T_sol_r      = reshaped["T_sol_r"]
@@ -1027,6 +1041,8 @@ def Exp_SingleMultiHouse_OnGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_data
     Nh_pv   = N_PV_Bat + N_PV
 
     Continuous = False
+
+    Model_Diagnostics = False
 
     m = gp.Model("MPC_community")
 
@@ -1122,7 +1138,7 @@ def Exp_SingleMultiHouse_OnGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_data
 
     # ---- Grid cost term: sum_k C_g(k) * E_g(k) ----
     for k in range(N):
-        obj += Lambda_G * Energy_Price[k] * E_g[k]
+        obj += Lambda_G * Energy_Price[k,0] * E_g[k]
 
     # ---- Comfort slack term: + Lambda_T * sum_{h,k} eps_h(h,k) ----
     for h in range(Nh_all):
@@ -1140,7 +1156,7 @@ def Exp_SingleMultiHouse_OnGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_data
     for p in range(Nh_pv):
         for k in range(N):
             l       = p*N + k
-            E_pv_l  = E_PV_Reshaped[l, 1]   # \overline E_pv^h(k) data
+            E_pv_l  = E_PV_Reshaped[l, 0]   # \overline E_pv^h(k) data
 
             obj += -Lambda_PV * u_pv[l] * E_pv_l
 
@@ -1162,14 +1178,14 @@ def Exp_SingleMultiHouse_OnGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_data
             if (k == 0):
 
                 m.addConstr(
-                    T_wall[i] == A_1 * T_wall_Init[h] + A_2 * T_h_Init[h] + B_1 * T_sol_w[k],
+                    T_wall[i] == A_1 * T_wall_Init[h,0] + A_2 * T_h_Init[h,0] + B_1 * T_sol_w[k,0],
                     name=f"T1_wall_h{h}_k{k}"
                 )
 
             else:
 
                 m.addConstr(
-                    T_wall[i] == A_1 * T_wall[i-1] + A_2 * T_ave[i-1] + B_1 * T_sol_w[k],
+                    T_wall[i] == A_1 * T_wall[i-1] + A_2 * T_ave[i-1] + B_1 * T_sol_w[k,0],
                     name=f"T1_wall_h{h}_k{k}"
                 )
 
@@ -1200,15 +1216,15 @@ def Exp_SingleMultiHouse_OnGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_data
             if (k == 0):
 
                 rhs = (
-                    A_3 * T_wall_Init[h] +
-                    A_4 * T_h_Init[h]  +
-                    A_5 * T_attic_Init[h]  +
-                    A_6 * T_im_Init[h]   +
-                    B_2 * T_am[k]   +
+                    A_3 * T_wall_Init[h,0] +
+                    A_4 * T_h_Init[h,0]  +
+                    A_5 * T_attic_Init[h,0]  +
+                    A_6 * T_im_Init[h,0]   +
+                    B_2 * T_am[k,0]   +
                     B_3 * Q_ihl     -
                     B_4 * Q_ac * U_ac[i] +
-                    B_5 * Q_venti_Const * (T_am[k] - T_h_Init[h]) +
-                    B_6 * Q_infil_Const * Ws[k] * (T_am[k] - T_h_Init[h])
+                    B_5 * Q_venti_Const * (T_am[k,0] - T_h_Init[h,0]) +
+                    B_6 * Q_infil_Const * Ws[k,0] * (T_am[k,0] - T_h_Init[h,0])
                 )
 
                 m.addConstr(
@@ -1223,11 +1239,11 @@ def Exp_SingleMultiHouse_OnGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_data
                     A_4 * T_ave[i-1]  +
                     A_5 * T_att[i-1]  +
                     A_6 * T_im[i-1]   +
-                    B_2 * T_am[k]   +
+                    B_2 * T_am[k,0]   +
                     B_3 * Q_ihl     -
                     B_4 * Q_ac * U_ac[i] +
-                    B_5 * Q_venti_Const * (T_am[k] - T_ave[i-1]) +
-                    B_6 * Q_infil_Const * Ws[k] * (T_am[k] - T_ave[i-1])
+                    B_5 * Q_venti_Const * (T_am[k,0] - T_ave[i-1]) +
+                    B_6 * Q_infil_Const * Ws[k,0] * (T_am[k,0] - T_ave[i-1])
                 )
 
                 m.addConstr(
@@ -1279,9 +1295,9 @@ def Exp_SingleMultiHouse_OnGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_data
             if (k == 0):
 
                 rhs = (
-                    A_7 * T_h_Init[h] +
-                    A_8 * T_attic_Init[h] +
-                    B_7 * T_sol_r[k]
+                    A_7 * T_h_Init[h,0] +
+                    A_8 * T_attic_Init[h,0] +
+                    B_7 * T_sol_r[k,0]
                 )
 
                 m.addConstr(
@@ -1294,7 +1310,7 @@ def Exp_SingleMultiHouse_OnGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_data
                 rhs = (
                     A_7 * T_ave[i-1] +
                     A_8 * T_att[i-1] +
-                    B_7 * T_sol_r[k]
+                    B_7 * T_sol_r[k,0]
                 )
 
                 m.addConstr(
@@ -1340,9 +1356,9 @@ def Exp_SingleMultiHouse_OnGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_data
             if (k == 0):
 
                 rhs = (
-                    A_9  * T_h_Init[h] +
-                    A_10 * T_im_Init[h]  +
-                    B_8  * Q_solar[k]
+                    A_9  * T_h_Init[h,0] +
+                    A_10 * T_im_Init[h,0]  +
+                    B_8  * Q_solar[k,0]
                 )
 
                 m.addConstr(
@@ -1355,7 +1371,7 @@ def Exp_SingleMultiHouse_OnGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_data
                 rhs = (
                     A_9  * T_ave[i-1] +
                     A_10 * T_im[i-1]  +
-                    B_8  * Q_solar[k]
+                    B_8  * Q_solar[k,0]
                 )
 
                 m.addConstr(
@@ -1401,7 +1417,7 @@ def Exp_SingleMultiHouse_OnGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_data
             if (k == 0):
 
                 m.addConstr(
-                    E_bat[i] == E_bat_Init[b] - Gamma[i] * (Gamma_Discharging*Simulation_StepSize),
+                    E_bat[i] == E_bat_Init[b,0] - Gamma[i] * (Gamma_Discharging*Simulation_StepSize),
                     name=f"Ebat_dyn_b{b}_k{k}"
                 )
 
@@ -1454,12 +1470,12 @@ def Exp_SingleMultiHouse_OnGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_data
         # + sum_h E_load(h,k)  (served load)
         for h in range(Nh_all):
             i = h*N + k
-            expr += E_l[i,1]
+            expr += E_l_Reshaped[i,0]
 
         # - sum_p u_pv(p,k) * \bar E_pv(p,k)  (PV energy use)
         for p in range(Nh_pv):
             l = p*N + k
-            E_pv_l = E_PV_Reshaped[l, 1]  # data
+            E_pv_l = E_PV_Reshaped[l, 0]  # data
             expr -= u_pv[l] * E_pv_l
 
         # - E_g(k)  (grid exchange)
@@ -1479,6 +1495,14 @@ def Exp_SingleMultiHouse_OnGrid_NoFairness_GurobiPy_MPC_Formulation(ctx, RC_data
                 T_ave[i] - eps_h[i] <= T_h_Max,
                 name=f"Comfort_h{h}_k{k}"
             )   
+
+    # =================================================================================
+    # Optimization Problem - Model Diagnostics
+    # =================================================================================
+
+    if (Model_Diagnostics):
+
+        Exp_GurobiPy_Model_Diagnostic(m, "SingleMultiHouse_OnGrid_Gurobi_MPC_Model.txt")
 
     # =================================================================================
     # Optimization Problem - Solve
@@ -1701,6 +1725,8 @@ def Exp_SingleMultiHouse_OffGrid_NoFairness_Casadi_MPC_Formulation(ctx, RC_data,
 
     Continuous = False
 
+    Model_Diagnostics = False
+
     # =================================================================================
     # Optimization Variables - Definitions
     # =================================================================================
@@ -1772,10 +1798,10 @@ def Exp_SingleMultiHouse_OffGrid_NoFairness_Casadi_MPC_Formulation(ctx, RC_data,
     _append_bounds(Nh_bat * N, 0.0, 1.0)
 
     # 10) f_on: 0..1
-    _append_bounds(Nh_bat * N, 0.0, 1.0)
+    _append_bounds(Nh_all * N, 0.0, 1.0)
 
     # 11) f_off: 0..1
-    _append_bounds(Nh_bat * N, 0.0, 1.0)
+    _append_bounds(Nh_all * N, 0.0, 1.0)
 
     # 13) g: 0..Epv_bar(h_loc,k)  (time-varying bound)
     for i in range(Nh_pv*N):
@@ -2322,7 +2348,7 @@ def Exp_SingleMultiHouse_OffGrid_NoFairness_Casadi_MPC_Formulation(ctx, RC_data,
             G_ub.append(0.0)
 
     # =================================================================================
-    # Optimization Problem - Solve
+    # Optimization Problem - Create
     # =================================================================================
 
     # Creating NLP Problem
@@ -2330,6 +2356,18 @@ def Exp_SingleMultiHouse_OffGrid_NoFairness_Casadi_MPC_Formulation(ctx, RC_data,
 
     ## Constructiong NLP Solver
     NLP_Solver = ca.nlpsol('nlp_solver', 'ipopt',  NLP_Problem, SolverOptions_Dict)
+
+    # =================================================================================
+    # Optimization Problem - Model Diagnostics
+    # =================================================================================
+
+    if (Model_Diagnostics):
+
+        Exp_Casadi_Model_Diagnostic(NLP_Problem, NLP_Solver, "SingleMultiHouse_OffGrid_Gurobi_MPC_Model.txt")
+
+    # =================================================================================
+    # Optimization Problem - Solve
+    # =================================================================================
 
     ## Solving the NLP Problem
 
@@ -2522,6 +2560,8 @@ def Exp_SingleMultiHouse_OnGrid_NoFairness_Casadi_MPC_Formulation(ctx, RC_data, 
     Nh_pv   = N_PV_Bat + N_PV
 
     Continuous = False
+
+    Model_Diagnostics = False
 
         # =================================================================================
     # Optimization Variables - Definitions
@@ -2981,7 +3021,7 @@ def Exp_SingleMultiHouse_OnGrid_NoFairness_Casadi_MPC_Formulation(ctx, RC_data, 
         # + sum_h E_load(h,k)
         for h in range(Nh_all):
             i = h*N + k
-            expr += E_l[i,1]
+            expr += E_l_Reshaped[i,1]
 
         # - sum_p u_pv(p,k) * \bar E_pv(p,k)
         for p in range(Nh_pv):
@@ -3011,7 +3051,15 @@ def Exp_SingleMultiHouse_OnGrid_NoFairness_Casadi_MPC_Formulation(ctx, RC_data, 
             G_ub.append(0.0)
 
     # =================================================================================
-    # Optimization Problem - Solve
+    # Optimization Problem - Model Diagnostics
+    # =================================================================================
+
+    if (Model_Diagnostics):
+
+        Exp_Casadi_Model_Diagnostic(NLP_Problem, NLP_Solver, "SingleMultiHouse_OffGrid_Gurobi_MPC_Model.txt")
+
+    # =================================================================================
+    # Optimization Problem - Create
     # =================================================================================
 
     # Creating NLP Problem
@@ -3019,6 +3067,18 @@ def Exp_SingleMultiHouse_OnGrid_NoFairness_Casadi_MPC_Formulation(ctx, RC_data, 
 
     ## Constructiong NLP Solver
     NLP_Solver = ca.nlpsol('nlp_solver', 'ipopt',  NLP_Problem, SolverOptions_Dict)
+
+    # =================================================================================
+    # Optimization Problem - Model Diagnostics
+    # =================================================================================
+
+    if (Model_Diagnostics):
+
+        Exp_Casadi_Model_Diagnostic(NLP_Problem, NLP_Solver, "SingleMultiHouse_OnGrid_Casadi_MPC_Model.txt")
+
+    # =================================================================================
+    # Optimization Problem - Solve
+    # =================================================================================
 
     ## Solving the NLP Problem
 

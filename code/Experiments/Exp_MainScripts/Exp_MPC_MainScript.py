@@ -10,24 +10,23 @@ from itertools import product
 import pandas as pd
 import numpy as np
 
-
-
 ###############################################################################################################
 ## Import Custom Packages
 ###############################################################################################################
 
 # Adding paths to find local modules
+
 paths_to_add = [
     r"C:\Users\ninad\Dropbox\NinadGaikwad_PhD\Gaikwad_Research\Gaikwad_Research_Work\SmartCommunitySim\code\Experiments\Exp_Modules",
-    r"C:\Users\ninad\Dropbox\NinadGaikwad_PhD\Gaikwad_Research\Gaikwad_Research_Work\SmartCommunitySim\code\SmartComSim",
+    r"C:\Users\ninad\Dropbox\NinadGaikwad_PhD\Gaikwad_Research\Gaikwad_Research_Work\SmartCommunitySim\code",
 ]
 
 for p in paths_to_add:
     if p not in sys.path and os.path.isdir(p):
         sys.path.append(p)
 
-from Exp_Modules.Exp_Config_Module import *
-from Exp_Modules.Exp_MPC_Controllers_Module import *
+from Exp_Config_Module import *
+from Exp_MPC_Controllers_Module import *
 
 from SmartComSim import SmartCommunity_Simulator as SC_Plant
 
@@ -36,9 +35,9 @@ from SmartComSim import SmartCommunity_Simulator as SC_Plant
 ###############################################################################################################
 
 # -------------------- Community Specifications -------------------- #
-COMMUNITY_TYPE = "House"  # "House", "Community",  
+COMMUNITY_TYPE = "Community"  # "House", "Community",  
 
-GRID_TYPE = "Off-Grid"  #  "Off-Grid", "On-Grid",
+GRID_TYPE = "On-Grid"  #  "Off-Grid", "On-Grid",
 
 CONTROLLER_TYPE = "MPC"  # "MPC", "RL-Training", "RL-Testing",
 
@@ -100,6 +99,8 @@ FileRes_Min = SC_Gainesville_Irma.simulation_params["FileRes"]
 
 TimeSteps_MPC_Horizon = int(MPC_HORIZON_HOURS * (60/FileRes_Min))
 
+N = TimeSteps_MPC_Horizon
+
 Total_Simulation_Steps = Total_Steps - TimeSteps_MPC_Horizon
 
 # Getting 
@@ -151,7 +152,6 @@ if (COMMUNITY_TYPE == "House" and GRID_TYPE == "Off-Grid"):
                                         "f_off":      [0.0] * (N_House * N),
 
                                         # PV variables (PV+BAT + PV)
-                                        "u_pv": [0.0] * (N_PV_Total * N),
                                         "g":    [0.0] * (N_PV_Total * N),
 
                                         # Loads and slack (all houses)
@@ -160,7 +160,6 @@ if (COMMUNITY_TYPE == "House" and GRID_TYPE == "Off-Grid"):
                                         "eps_l":  [0.0] * (N_House * N),
 
                                         # Grid (per timestep)
-                                        "E_g": [0.0] * N,
                                     },
 
         # ---------------- Cost weights (Λ terms) ----------------
@@ -199,18 +198,12 @@ elif (COMMUNITY_TYPE == "House" and GRID_TYPE == "On-Grid"):
                                         # Battery states & controls (PV+BAT + BAT)
                                         "E_bat":      [0.0] * (N_Bat_Total * N),
                                         "Gamma":      [0.0] * (N_Bat_Total * N),
-                                        "theta_bat":  [0.0] * (N_Bat_Total * N),
-                                        "f_on":       [0.0] * (N_House * N),
-                                        "f_off":      [0.0] * (N_House * N),
 
                                         # PV variables (PV+BAT + PV)
                                         "u_pv": [0.0] * (N_PV_Total * N),
-                                        "g":    [0.0] * (N_PV_Total * N),
 
                                         # Loads and slack (all houses)
-                                        "E_load": [0.0] * (N_House * N),
                                         "eps_h":  [0.0] * (N_House * N),
-                                        "eps_l":  [0.0] * (N_House * N),
 
                                         # Grid (per timestep)
                                         "E_g": [0.0] * N,
@@ -254,7 +247,6 @@ elif (COMMUNITY_TYPE == "Community" and GRID_TYPE == "Off-Grid"):
                                         "f_off":      [0.0] * (N_House * N),
 
                                         # PV variables (PV+BAT + PV)
-                                        "u_pv": [0.0] * (N_PV_Total * N),
                                         "g":    [0.0] * (N_PV_Total * N),
 
                                         # Loads and slack (all houses)
@@ -263,7 +255,6 @@ elif (COMMUNITY_TYPE == "Community" and GRID_TYPE == "Off-Grid"):
                                         "eps_l":  [0.0] * (N_House * N),
 
                                         # Grid (per timestep)
-                                        "E_g": [0.0] * N,
                                     },
 
         # ---------------- Cost weights (Λ terms) ----------------
@@ -299,18 +290,12 @@ elif (COMMUNITY_TYPE == "Community" and GRID_TYPE == "On-Grid"):
                                         # Battery states & controls (PV+BAT + BAT)
                                         "E_bat":      [0.0] * (N_Bat_Total * N),
                                         "Gamma":      [0.0] * (N_Bat_Total * N),
-                                        "theta_bat":  [0.0] * (N_Bat_Total * N),
-                                        "f_on":       [0.0] * (N_House * N),
-                                        "f_off":      [0.0] * (N_House * N),
 
                                         # PV variables (PV+BAT + PV)
                                         "u_pv": [0.0] * (N_PV_Total * N),
-                                        "g":    [0.0] * (N_PV_Total * N),
 
                                         # Loads and slack (all houses)
-                                        "E_load": [0.0] * (N_House * N),
                                         "eps_h":  [0.0] * (N_House * N),
-                                        "eps_l":  [0.0] * (N_House * N),
 
                                         # Grid (per timestep)
                                         "E_g": [0.0] * N,
@@ -338,7 +323,21 @@ elif (COMMUNITY_TYPE == "Community" and GRID_TYPE == "On-Grid"):
 total_mpc_time = 0.0
 
 # FOR LOOP: For each Simulation Step
-for ii in range(Total_Simulation_Steps):
+for ii in range(20):  # Total_Simulation_Steps
+
+    # -------------------------------
+    # Print - Iteration Information
+    # -------------------------------
+
+    percent_done = 100.0 * (ii + 1) / Total_Simulation_Steps
+
+    print(
+        f"[Step {ii+1:6d}/{Total_Simulation_Steps}] "
+        f"({percent_done:6.2f}%) | "
+        f"Community={COMMUNITY_TYPE} | "
+        f"Grid={GRID_TYPE} | "
+        f"Controller={CONTROLLER_TYPE}"
+    )
 
     # -------------------------------
     # Start timer for MPC computation
@@ -348,19 +347,19 @@ for ii in range(Total_Simulation_Steps):
     # Creating MPC_Parameters
     if (COMMUNITY_TYPE == "House" and GRID_TYPE == "Off-Grid"):
 
-        Action, Initial_DecisionVariables = SingleHouse_OffGrid_MPC_Controller(SC_Gainesville_Irma, MPC_Parameters)
+        Action, Initial_DecisionVariables, _, _ = SingleHouse_OffGrid_MPC_Controller(SC_Gainesville_Irma, MPC_Parameters)
 
     elif (COMMUNITY_TYPE == "House" and GRID_TYPE == "On-Grid"):
 
-        Action, Initial_DecisionVariables = SingleHouse_OnGrid_MPC_Controller(SC_Gainesville_Irma, MPC_Parameters)
+        Action, Initial_DecisionVariables, _, _  = SingleHouse_OnGrid_MPC_Controller(SC_Gainesville_Irma, MPC_Parameters)
 
     elif (COMMUNITY_TYPE == "Community" and GRID_TYPE == "Off-Grid"):
 
-        Action, Initial_DecisionVariables = MultiHouse_OffGrid_MPC_Controller(SC_Gainesville_Irma, MPC_Parameters)
+        Action, Initial_DecisionVariables, _, _  = MultiHouse_OffGrid_MPC_Controller(SC_Gainesville_Irma, MPC_Parameters)
 
     elif (COMMUNITY_TYPE == "Community" and GRID_TYPE == "On-Grid"):
 
-        Action, Initial_DecisionVariables = MultiHouse_OnGrid_MPC_Controller(SC_Gainesville_Irma, MPC_Parameters)
+        Action, Initial_DecisionVariables, _, _  = MultiHouse_OnGrid_MPC_Controller(SC_Gainesville_Irma, MPC_Parameters)
 
     
     # Warm Start

@@ -32,7 +32,9 @@ class SmartCommunitySimulator(gym.Env):
         # -----------------------------------------------------------------------------------------------------------
         
         # Staring Matlab Engine
-        eng = matlab.engine.start_matlab()  # matlab.engine.start_matlab("-desktop")
+        eng = matlab.engine.start_matlab("-desktop")  # matlab.engine.start_matlab("-desktop")
+
+        eng.eval("set(0,'DefaultFigureVisible','off')", nargout=0)
 
         # -----------------------------------------------------------------------------------------------------------
         ## Adding Legacy Code Paths to Matlab Engine 
@@ -94,7 +96,8 @@ class SmartCommunitySimulator(gym.Env):
         simulation_params["StepSize"] = simulation_params["FileRes"] * 60  # in Seconds
 
         # Computed Values
-        N_House = sum(community_params.values())  # Total number of houses
+        # N_House = sum(community_params.values())  # Total number of houses [passed by reference - train/eval envs for RL]
+        N_House = community_params["N_PV_Bat"]+community_params["N_PV"]+community_params["N_Bat"]+community_params["N_None"]
         N_House_Vector = matlab.double([community_params["N_PV_Bat"], community_params["N_Bat"], community_params["N_PV"], community_params["N_None"]])
 
         # Computed Value
@@ -301,7 +304,14 @@ class SmartCommunitySimulator(gym.Env):
 
         self.X_k_Plant = np.array(self.X_k_Plant)
 
-        self.X_k_Plant[0, :, :] = X_k_Plus_Plant[1, :, :]
+        # Managing Single House (:,:) and Multi House (:,:,:)
+        if (len(self.X_k_Plant.shape) == 2):  # Single House
+
+            self.X_k_Plant[0, :] = X_k_Plus_Plant[1, :]
+
+        else:  # Multi House
+
+            self.X_k_Plant[0, :, :] = X_k_Plus_Plant[1, :, :]
 
         self.X_k_Plant = matlab.double(self.X_k_Plant.tolist())
 
@@ -316,9 +326,16 @@ class SmartCommunitySimulator(gym.Env):
 
         if (self.History_Flag):
 
-            self.X_k_Plant_History = np.array(self.X_k_Plant_History)            
+            self.X_k_Plant_History = np.array(self.X_k_Plant_History)  
 
-            self.X_k_Plant_History = np.concatenate((self.X_k_Plant_History[:self.time_iter, :, :], X_k_Plus_Plant), axis=0)
+            # Managing Single House (:,:) and Multi House (:,:,:)
+            if (len(self.X_k_Plant_History.shape) == 2):  # Single House 
+
+                self.X_k_Plant_History = np.concatenate((self.X_k_Plant_History[:self.time_iter, :], X_k_Plus_Plant), axis=0)
+
+            else: # Multi House         
+
+                self.X_k_Plant_History = np.concatenate((self.X_k_Plant_History[:self.time_iter, :, :], X_k_Plus_Plant), axis=0)
 
             # Convert back to `matlab.double`
             self.X_k_Plant_History = matlab.double(self.X_k_Plant_History.tolist())      
@@ -331,9 +348,16 @@ class SmartCommunitySimulator(gym.Env):
 
         if (self.History_Flag):
 
-            self.U_k_History = np.array(self.U_k_History)            
+            self.U_k_History = np.array(self.U_k_History)     
 
-            self.U_k_History = np.concatenate((self.U_k_History[:self.time_iter, :, :], U_k), axis=0)
+            # Managing Single House (:,:) and Multi House (:,:,:)
+            if (len(self.U_k_History.shape) == 2):  # Single House      
+
+                self.U_k_History = np.concatenate((self.U_k_History[:self.time_iter, :], U_k), axis=0)
+
+            else :  # Multi House  
+
+                self.U_k_History = np.concatenate((self.U_k_History[:self.time_iter, :, :], U_k), axis=0)
 
             # Convert back to `matlab.double`
             self.U_k_History = matlab.double(self.U_k_History.tolist())   

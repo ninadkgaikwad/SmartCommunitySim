@@ -29,14 +29,14 @@ def Exp_Configuration_Generator(COMMUNITY_TYPE, GRID_TYPE, CONTROLLER_TYPE, LOAD
     
 
     if LOAD_DATA_INITIALIZE:
-        LoadDataType = 1
-    else:
         LoadDataType = 2
+    else:
+        LoadDataType = 1
 
     if WEATHER_DATA_INITIALIZE:
-        WeatherDataType = 1
-    else:
         WeatherDataType = 2
+    else:
+        WeatherDataType = 1
 
     if (COMMUNITY_TYPE == "House" and  GRID_TYPE == "Off-Grid"  and CONTROLLER_TYPE == "MPC"):  # SingleHouse_OffGrid_MPC_Config
         #-------------------------------------------------------------------------------------------------------------#
@@ -123,7 +123,7 @@ def Exp_Configuration_Generator(COMMUNITY_TYPE, GRID_TYPE, CONTROLLER_TYPE, LOAD
         "plant_dynamic_params" : {
             "Lat": 29.65, # Latitude of Community Location (+ -> Northern Hemishphere; - -> Souththern Hemishphere)
             "Long": -82.32, # Longitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
-            "Ltm": 60, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
+            "Ltm": 60.0, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
             "AC_COP_Factor": 1.0,  # Placeholder for AC Coefficient of Performance [> 0.0][depending on the type of AC, gets multiplied by base COP of 3.33]
             "ACLoad_Power_Factor": 1.0,  # Placeholder for AC Load Power Factor [> 0.0][depending type of AC, get multiplied by base AC power of 3000W]
             "T_AC_SetPoint": 24.0,  # Base AC Temperature Setpoint
@@ -221,7 +221,7 @@ def Exp_Configuration_Generator(COMMUNITY_TYPE, GRID_TYPE, CONTROLLER_TYPE, LOAD
         "plant_dynamic_params" : {
             "Lat": 29.65, # Latitude of Community Location (+ -> Northern Hemishphere; - -> Souththern Hemishphere)
             "Long": -82.32, # Longitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
-            "Ltm": 60, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
+            "Ltm": 60.0, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
             "AC_COP_Factor": 1.0,  # Placeholder for AC Coefficient of Performance [> 0.0][depending on the type of AC, gets multiplied by base COP of 3.33]
             "ACLoad_Power_Factor": 1.0,  # Placeholder for AC Load Power Factor [> 0.0][depending type of AC, get multiplied by base AC power of 3000W]
             "T_AC_SetPoint": 24.0,  # Base AC Temperature Setpoint
@@ -319,7 +319,7 @@ def Exp_Configuration_Generator(COMMUNITY_TYPE, GRID_TYPE, CONTROLLER_TYPE, LOAD
         "plant_dynamic_params" : {
             "Lat": 29.65, # Latitude of Community Location (+ -> Northern Hemishphere; - -> Souththern Hemishphere)
             "Long": -82.32, # Longitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
-            "Ltm": 60, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
+            "Ltm": 60.0, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
             "AC_COP_Factor": 1.0,  # Placeholder for AC Coefficient of Performance [> 0.0][depending on the type of AC, gets multiplied by base COP of 3.33]
             "ACLoad_Power_Factor": 1.0,  # Placeholder for AC Load Power Factor [> 0.0][depending type of AC, get multiplied by base AC power of 3000W]
             "T_AC_SetPoint": 24.0,  # Base AC Temperature Setpoint
@@ -417,7 +417,7 @@ def Exp_Configuration_Generator(COMMUNITY_TYPE, GRID_TYPE, CONTROLLER_TYPE, LOAD
         "plant_dynamic_params" : {
             "Lat": 29.65, # Latitude of Community Location (+ -> Northern Hemishphere; - -> Souththern Hemishphere)
             "Long": -82.32, # Longitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
-            "Ltm": 60, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
+            "Ltm": 60.0, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
             "AC_COP_Factor": 1.0,  # Placeholder for AC Coefficient of Performance [> 0.0][depending on the type of AC, gets multiplied by base COP of 3.33]
             "ACLoad_Power_Factor": 1.0,  # Placeholder for AC Load Power Factor [> 0.0][depending type of AC, get multiplied by base AC power of 3000W]
             "T_AC_SetPoint": 24.0,  # Base AC Temperature Setpoint
@@ -515,7 +515,7 @@ def Exp_Configuration_Generator(COMMUNITY_TYPE, GRID_TYPE, CONTROLLER_TYPE, LOAD
         "plant_dynamic_params" : {
             "Lat": 29.65, # Latitude of Community Location (+ -> Northern Hemishphere; - -> Souththern Hemishphere)
             "Long": -82.32, # Longitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
-            "Ltm": 60, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
+            "Ltm": 60.0, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
             "AC_COP_Factor": 1.0,  # Placeholder for AC Coefficient of Performance [> 0.0][depending on the type of AC, gets multiplied by base COP of 3.33]
             "ACLoad_Power_Factor": 1.0,  # Placeholder for AC Load Power Factor [> 0.0][depending type of AC, get multiplied by base AC power of 3000W]
             "T_AC_SetPoint": 24.0,  # Base AC Temperature Setpoint
@@ -613,7 +613,7 @@ def Exp_Configuration_Generator(COMMUNITY_TYPE, GRID_TYPE, CONTROLLER_TYPE, LOAD
         "plant_dynamic_params" : {
             "Lat": 29.65, # Latitude of Community Location (+ -> Northern Hemishphere; - -> Souththern Hemishphere)
             "Long": -82.32, # Longitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
-            "Ltm": 60, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
+            "Ltm": 60.0, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
             "AC_COP_Factor": 1.0,  # Placeholder for AC Coefficient of Performance [> 0.0][depending on the type of AC, gets multiplied by base COP of 3.33]
             "ACLoad_Power_Factor": 1.0,  # Placeholder for AC Load Power Factor [> 0.0][depending type of AC, get multiplied by base AC power of 3000W]
             "T_AC_SetPoint": 24.0,  # Base AC Temperature Setpoint
@@ -711,7 +711,7 @@ def Exp_Configuration_Generator(COMMUNITY_TYPE, GRID_TYPE, CONTROLLER_TYPE, LOAD
         "plant_dynamic_params" : {
             "Lat": 29.65, # Latitude of Community Location (+ -> Northern Hemishphere; - -> Souththern Hemishphere)
             "Long": -82.32, # Longitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
-            "Ltm": 60, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
+            "Ltm": 60.0, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
             "AC_COP_Factor": 1.0,  # Placeholder for AC Coefficient of Performance [> 0.0][depending on the type of AC, gets multiplied by base COP of 3.33]
             "ACLoad_Power_Factor": 1.0,  # Placeholder for AC Load Power Factor [> 0.0][depending type of AC, get multiplied by base AC power of 3000W]
             "T_AC_SetPoint": 24.0,  # Base AC Temperature Setpoint
@@ -809,7 +809,7 @@ def Exp_Configuration_Generator(COMMUNITY_TYPE, GRID_TYPE, CONTROLLER_TYPE, LOAD
         "plant_dynamic_params" : {
             "Lat": 29.65, # Latitude of Community Location (+ -> Northern Hemishphere; - -> Souththern Hemishphere)
             "Long": -82.32, # Longitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
-            "Ltm": 60, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
+            "Ltm": 60.0, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
             "AC_COP_Factor": 1.0,  # Placeholder for AC Coefficient of Performance [> 0.0][depending on the type of AC, gets multiplied by base COP of 3.33]
             "ACLoad_Power_Factor": 1.0,  # Placeholder for AC Load Power Factor [> 0.0][depending type of AC, get multiplied by base AC power of 3000W]
             "T_AC_SetPoint": 24.0,  # Base AC Temperature Setpoint
@@ -907,7 +907,7 @@ def Exp_Configuration_Generator(COMMUNITY_TYPE, GRID_TYPE, CONTROLLER_TYPE, LOAD
         "plant_dynamic_params" : {
             "Lat": 29.65, # Latitude of Community Location (+ -> Northern Hemishphere; - -> Souththern Hemishphere)
             "Long": -82.32, # Longitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
-            "Ltm": 60, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
+            "Ltm": 60.0, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
             "AC_COP_Factor": 1.0,  # Placeholder for AC Coefficient of Performance [> 0.0][depending on the type of AC, gets multiplied by base COP of 3.33]
             "ACLoad_Power_Factor": 1.0,  # Placeholder for AC Load Power Factor [> 0.0][depending type of AC, get multiplied by base AC power of 3000W]
             "T_AC_SetPoint": 24.0,  # Base AC Temperature Setpoint
@@ -1005,7 +1005,7 @@ def Exp_Configuration_Generator(COMMUNITY_TYPE, GRID_TYPE, CONTROLLER_TYPE, LOAD
         "plant_dynamic_params" : {
             "Lat": 29.65, # Latitude of Community Location (+ -> Northern Hemishphere; - -> Souththern Hemishphere)
             "Long": -82.32, # Longitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
-            "Ltm": 60, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
+            "Ltm": 60.0, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
             "AC_COP_Factor": 1.0,  # Placeholder for AC Coefficient of Performance [> 0.0][depending on the type of AC, gets multiplied by base COP of 3.33]
             "ACLoad_Power_Factor": 1.0,  # Placeholder for AC Load Power Factor [> 0.0][depending type of AC, get multiplied by base AC power of 3000W]
             "T_AC_SetPoint": 24.0,  # Base AC Temperature Setpoint
@@ -1103,7 +1103,7 @@ def Exp_Configuration_Generator(COMMUNITY_TYPE, GRID_TYPE, CONTROLLER_TYPE, LOAD
         "plant_dynamic_params" : {
             "Lat": 29.65, # Latitude of Community Location (+ -> Northern Hemishphere; - -> Souththern Hemishphere)
             "Long": -82.32, # Longitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
-            "Ltm": 60, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
+            "Ltm": 60.0, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
             "AC_COP_Factor": 1.0,  # Placeholder for AC Coefficient of Performance [> 0.0][depending on the type of AC, gets multiplied by base COP of 3.33]
             "ACLoad_Power_Factor": 1.0,  # Placeholder for AC Load Power Factor [> 0.0][depending type of AC, get multiplied by base AC power of 3000W]
             "T_AC_SetPoint": 24.0,  # Base AC Temperature Setpoint
@@ -1201,7 +1201,7 @@ def Exp_Configuration_Generator(COMMUNITY_TYPE, GRID_TYPE, CONTROLLER_TYPE, LOAD
         "plant_dynamic_params" : {
             "Lat": 29.65, # Latitude of Community Location (+ -> Northern Hemishphere; - -> Souththern Hemishphere)
             "Long": -82.32, # Longitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
-            "Ltm": 60, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
+            "Ltm": 60.0, # Time Zone Logitude of Community Location (+ -> Eastern Hemishphere; - -> Western Hemishphere)
             "AC_COP_Factor": 1.0,  # Placeholder for AC Coefficient of Performance [> 0.0][depending on the type of AC, gets multiplied by base COP of 3.33]
             "ACLoad_Power_Factor": 1.0,  # Placeholder for AC Load Power Factor [> 0.0][depending type of AC, get multiplied by base AC power of 3000W]
             "T_AC_SetPoint": 24.0,  # Base AC Temperature Setpoint
@@ -1216,45 +1216,3 @@ def Exp_Configuration_Generator(COMMUNITY_TYPE, GRID_TYPE, CONTROLLER_TYPE, LOAD
 
     return Config
 
-def Exp_RL_Configuration_Generator():
-
-    # -------------------- Horizon - USER SETUP-------------------- #
-    RL_HORIZON_HOURS = 24
-    RL_HORIZON_HOUR_AVG = 1
-    RL_DATA_RES = 10.0
-
-    # -------------------- Horizon - DERIVED ----------------------- #
-    RL_HORIZON_N = int(RL_HORIZON_HOURS * (60 / RL_DATA_RES))
-    RL_HORIZON_AVG_N = int(RL_HORIZON_HOUR_AVG * (60 / RL_DATA_RES))
-
-    # -------------------- RL PARAMETERS DICTIONARY ---------------- #
-    RL_Parameters = {
-        "RL_HORIZON_HOURS": RL_HORIZON_HOURS,
-        "RL_HORIZON_HOUR_AVG": RL_HORIZON_HOUR_AVG,
-        "RL_DATA_RES": RL_DATA_RES,
-        "RL_HORIZON_N": RL_HORIZON_N,
-        "RL_HORIZON_AVG_N": RL_HORIZON_AVG_N,
-
-        # Off-grid reward weights
-        "OFFGRID_WEIGHTS": {
-            "W_T_h":        1.0,
-            "W_Ebat":       1.0,
-            "W_Ebal":       1.0,
-            "W_startup":    1.0,
-            "W_surplus":    1.0,
-            "W_load":       1.0,
-            "W_mode":       1.0,
-        },
-
-        # On-grid reward weights
-        "ONGRID_WEIGHTS": {
-            "W_T_h":        1.0,
-            "W_Ebat":       1.0,
-            "W_mode":       1.0,
-            "W_cost":       1.0,
-            "W_PV":         1.0,
-            "W_u_pv":       1.0,
-        },
-    }  
-
-    return RL_Parameters

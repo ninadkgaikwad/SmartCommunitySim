@@ -63,10 +63,10 @@ Simulation_StepSize=Simulation_Params.Simulation_StepSize;
 %% Basic Computation and Generating plotable quantities
 
 % House Numbers
-N1=N_PV_Bat;
-N2=N_Bat;
-N3=N_PV;
-N4=N_None;
+N1=double(N_PV_Bat);
+N2=double(N_Bat);
+N3=double(N_PV);
+N4=double(N_None);
 
 %
 E_LoadData=E_LoadData*Eff_Inv;
@@ -76,6 +76,10 @@ E_Load_Desired=E_Load_Desired*Eff_Inv;
 X_k_Plant_History=X_k_Plant_History(1:end-1,:,:);
 
 X_k_Plant = X_k_Plant_History;
+
+% Get Length for Plotting
+L_vec = size(X_k_Plant_History);
+L = L_vec(1);
 
 % PV Quantities - Individual Houses
 House_PV_E_Available=X_k_Plant_History(:,1,:);
@@ -91,7 +95,7 @@ House_Bat_E_Discharging=X_k_Plant_History(:,6,:);
 House_Temprature=X_k_Plant_History(:,7,:);
 
 % House Energy Quantities - Individual Houses
-House_Bat_E_OtherLoad_Desired=E_Load_Desired(:,1,:);
+House_Bat_E_OtherLoad_Desired=E_Load_Desired(1:L,1,:);
 House_Bat_E_ACLoad_Desired=U_k_History(:,3,:).*(E_AC);%***
 House_Bat_E_TotalLoad_Desired=House_Bat_E_OtherLoad_Desired+House_Bat_E_ACLoad_Desired;
 
@@ -121,7 +125,7 @@ Community_Bat_E_Discharging=sum(X_k_Plant_History(:,6,:),3);
 Community_Temprature=mean(X_k_Plant_History(:,7,:),3);
 
 % House Energy Quantities - Individual Houses - All Houses (Addup)
-Community_Bat_E_OtherLoad_Desired=sum(E_Load_Desired(:,1,:),3);
+Community_Bat_E_OtherLoad_Desired=sum(E_Load_Desired(1:L,1,:),3);
 Community_Bat_E_ACLoad_Desired=sum(House_Bat_E_ACLoad_Desired(:,1,:),3);
 Community_Bat_E_TotalLoad_Desired=Community_Bat_E_ACLoad_Desired+Community_Bat_E_OtherLoad_Desired;
 
@@ -148,9 +152,9 @@ Community_E_Generation=Community_PV_E_Used+Community_Bat_E_Discharging;
 Community_E_Demand=Community_Bat_E_Charging+Community_Bat_E_TotalLoad_Actual;
 
 % House/Community Level Battery Charging_Dispatchable/Discharging_Dispatchable
-House_Bat_E_Charging_Dispatchable=zeros(length(GHI),1,N_House); % Initialization
-House_Bat_E_Discharging_Dispatchable=zeros(length(GHI),1,N_House); % Initialization
-for ii=1:length(GHI)
+House_Bat_E_Charging_Dispatchable=zeros(L,1,N_House); % Initialization
+House_Bat_E_Discharging_Dispatchable=zeros(L,1,N_House); % Initialization
+for ii=1:L
     if (Community_PV_E_Available(ii,1,1)>=Community_Bat_E_TotalLoad_Desired(ii,1,1))
 
         for jj=1:(N_PV_Bat+N_Bat)
@@ -227,7 +231,7 @@ M=minutes(D);
 
 H=M/60;
 
-L=length(DateTimeVector);
+% L=length(DateTimeVector);
 
 HoursVector=zeros(L,1);
 HoursVector=zeros(L,1);

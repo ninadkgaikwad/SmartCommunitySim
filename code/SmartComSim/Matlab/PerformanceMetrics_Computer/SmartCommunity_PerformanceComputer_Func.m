@@ -1,4 +1,4 @@
-function [] = SmartCommunity_PerformanceComputer_Func(X_k_Plant_History, U_k_History, E_LoadData, E_Load_Desired, HEMSWeatherData_Output, HEMSPlant_Params, Community_Params, result_filefolder_paths, Simulation_Params)
+function [Plant_Performance] = SmartCommunity_PerformanceComputer_Func(X_k_Plant_History, U_k_History, E_LoadData, E_Load_Desired, HEMSWeatherData_Output, HEMSPlant_Params, Community_Params, result_filefolder_paths, Simulation_Params)
     %SMARTCOMMUNITY_PERFORMANCECOMPUTER_FUNC Computes performance metrics for the Smart Community simulation.
     %
     % This function evaluates the system's performance based on historical state data, 

@@ -47,13 +47,13 @@ from SmartComSim import SmartCommunity_Simulator as SC_Plant
 ###############################################################################################################
 
 # -------------------- Community Specifications -------------------- #
-COMMUNITY_TYPE = "Community"      # "House", "Community"
-GRID_TYPE       = "On-Grid"  # "Off-Grid", "On-Grid"
+COMMUNITY_TYPE = "House"      # "House", "Community"
+GRID_TYPE       = "Off-Grid"  # "Off-Grid", "On-Grid"
 CONTROLLER_TYPE = "RL-Training"  # IMPORTANT: "MPC", "RL-Training", "RL-Testing"
 
 # These flags control whether MATLAB pre-processors recompute/load weather/load data
-LOAD_DATA_INITIALIZE    = True  # True = Initialize Load Data ; False = Use existing
-WEATHER_DATA_INITIALIZE = True  # True = Initialize Weather Data ; False = Use existing
+LOAD_DATA_INITIALIZE    = False  # True = Initialize Load Data ; False = Use existing
+WEATHER_DATA_INITIALIZE = False  # True = Initialize Weather Data ; False = Use existing
 
 # -------------------- RL / SAC Hyperparameters -------------------- #
 RL_SEED           = 42
@@ -131,31 +131,11 @@ for d in [rl_log_root, tensorboard_logdir, checkpoint_dir, best_model_dir, eval_
 set_random_seed(RL_SEED)
 
 # Single-environment DummyVecEnv (because MATLAB engine is not vectorized)
-train_env = DummyVecEnv([make_env_fn(simulation_params,
-                                        community_params,
-                                        plant_initial_conditions,
-                                        simulation_period,
-                                        plant_dynamic_params,
-                                        data_paths,
-                                        result_filefolder_paths,
-                                        simulation_ObservationActionSpace_Functions,
-                                        simulation_RewardTerminateTruncate_Functions,
-                                        rl_log_root,
-                                    )])
+train_env = DummyVecEnv([make_env_fn(seed=RL_SEED)])
 train_env = VecMonitor(train_env, filename=os.path.join(rl_log_root, "vec_monitor.csv"))
 
 # Separate evaluation environment (fresh instance, same config)
-eval_env = DummyVecEnv([make_env_fn(simulation_params,
-                                    community_params,
-                                    plant_initial_conditions,
-                                    simulation_period,
-                                    plant_dynamic_params,
-                                    data_paths,
-                                    result_filefolder_paths,
-                                    simulation_ObservationActionSpace_Functions,
-                                    simulation_RewardTerminateTruncate_Functions,
-                                    rl_log_root,
-                                    )])
+eval_env = DummyVecEnv([make_env_fn(seed=RL_SEED + 1)])
 eval_env = VecMonitor(eval_env, filename=os.path.join(eval_log_dir, "vec_monitor_eval.csv"))
 
 ###############################################################################################################

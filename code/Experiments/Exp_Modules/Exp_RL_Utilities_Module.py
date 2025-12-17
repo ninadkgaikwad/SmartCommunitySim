@@ -22,7 +22,7 @@ for p in paths_to_add:
     if p not in sys.path and os.path.isdir(p):
         sys.path.append(p)
 
-from Exp_Config_Module import *
+from Exp_RL_Config_Module import *
 from Exp_MPC_RL_Helpers import *
 
 ###############################################################################################################
@@ -31,7 +31,7 @@ from Exp_MPC_RL_Helpers import *
 
 # -------------------- RL Setup - Configured in Exp_Config_Module-------------------- #
 
-RL_Parameters = Exp_RL_Configuration_Generator()
+RL_Parameters = Exp_RL_Configuration_Generator() 
 
 ###############################################################################################################
 ## Experiment RL Utilities Module - Custom Functions
@@ -298,7 +298,7 @@ def SingleHouse_OffGrid_RL_Reward_Function(SmartComSim_Object, observation_k_1, 
     P_bat                   = ctx["P_bat"]
 
     # Additional variable requested
-    E_l_max                 = ctx["E_l_max"]
+    E_l_max                 = ctx["E_l_Max"]
 
     E_AC                    = E_AC / Eff_Inv 
 
@@ -504,6 +504,9 @@ def SingleHouse_OffGrid_RL_Reward_Function(SmartComSim_Object, observation_k_1, 
     if energy_surplus > 0.0 and num_charging < num_batteries:
         # scaled penalty
         R_surplus = - energy_surplus * num_not_charging
+    elif energy_surplus <= 0.0 and num_charging > 0:
+        # scaled penalty
+        R_surplus = -1 + energy_surplus * num_charging
     else:
         # Either no surplus, or ALL batteries are charging
         R_surplus = 0.0
@@ -541,8 +544,8 @@ def SingleHouse_OffGrid_RL_Reward_Function(SmartComSim_Object, observation_k_1, 
         # ----------------------------------------------------------
         # CASE A: Fully served or overserved
         # ----------------------------------------------------------
-        if Eload >= El:
-            R_load_per_house[i] = 1.0
+        if Eload > El:
+            R_load_per_house[i] = - (Eload - El)
 
         # ----------------------------------------------------------
         # CASE B: Between critical and full demand
@@ -680,7 +683,7 @@ def SingleHouse_OffGrid_RL_Terminate_Function(SmartComSim_Object):
         # Band width = 5% of usable range
         E_min = ctx["E_bat_Min"]
         E_max = ctx["E_bat_Max"]
-        low_band_width = 0.0005 * (E_max - E_min)
+        low_band_width = 0.05 * (E_max - E_min)
 
         low_band_lower = E_min
         low_band_upper = E_min + low_band_width
@@ -750,11 +753,11 @@ def SingleHouse_OffGrid_RL_Truncate_Function(SmartComSim_Object):
     # If we exceed or reach the data boundary threshold,
     # we cannot supply future horizon data -> must end episode.
     if current_step >= max_safe_step - 1:
-        Terminate = True   # Artificial termination → will map to truncated
+        Truncate = True   # Artificial termination → will map to truncated
     else:
-        Terminate = False
+        Truncate = False
 
-    return Terminate
+    return Truncate
 
 #-------------------------------------------------------------------------------------------------------------#
 # Single House On-Grid RL
@@ -998,7 +1001,7 @@ def SingleHouse_OnGrid_RL_Reward_Function(SmartComSim_Object, observation_k_1, a
     P_bat                   = ctx["P_bat"]
 
     # Additional variable requested
-    E_l_max                 = ctx["E_l_max"]
+    E_l_max                 = ctx["E_l_Max"]
 
     E_AC                    = E_AC / Eff_Inv 
 
@@ -1022,7 +1025,7 @@ def SingleHouse_OnGrid_RL_Reward_Function(SmartComSim_Object, observation_k_1, a
     # Parse observation_k_1
     # =================================================================================
 
-    o_k_1_Dict = Exp_SingleMultiHouse_OffGrid_parse_observation(observation_k_1, env, RL_Parameters)
+    o_k_1_Dict = Exp_SingleMultiHouse_OnGrid_parse_observation(observation_k_1, env, RL_Parameters)
 
     Th_now_1      = o_k_1_Dict["Th"]            # shape: (N_House,)
     E_Bat_now_1   = o_k_1_Dict["E_Bat"]         # shape: (N_PV_Bat+N_Bat,)
@@ -1035,7 +1038,7 @@ def SingleHouse_OnGrid_RL_Reward_Function(SmartComSim_Object, observation_k_1, a
     # Parse action_k_0
     # =================================================================================
 
-    a_k_0_Dict = Exp_SingleMultiHouse_OffGrid_parse_action(action_k_0, env)
+    a_k_0_Dict = Exp_SingleMultiHouse_OnGrid_parse_action(action_k_0, env)
 
     U_ac_0   = a_k_0_Dict["U_ac"]      # shape: (N_House,)
     Gamma_0  = a_k_0_Dict["Gamma"]     # shape: (N_PV_Bat + N_Bat,)
@@ -1048,7 +1051,7 @@ def SingleHouse_OnGrid_RL_Reward_Function(SmartComSim_Object, observation_k_1, a
     # Parse observation_k_0
     # =================================================================================
 
-    o_k_0_Dict = Exp_SingleMultiHouse_OffGrid_parse_observation(observation_k_0, env, RL_Parameters)
+    o_k_0_Dict = Exp_SingleMultiHouse_OnGrid_parse_observation(observation_k_0, env, RL_Parameters)
 
     Th_now_0      = o_k_0_Dict["Th"]            # shape: (N_House,)
     E_Bat_now_0   = o_k_0_Dict["E_Bat"]         # shape: (N_PV_Bat+N_Bat,)
@@ -1166,7 +1169,8 @@ def SingleHouse_OnGrid_RL_Reward_Function(SmartComSim_Object, observation_k_1, a
     E_load_total = float(np.sum(E_l_now_0))
 
     # Battery discharge energy (kWh) this step
-    Gamma_discharge = np.maximum(Gamma_0, 0.0)   # only discharging contributes
+    # Gamma_discharge = np.maximum(Gamma_0, 0.0)   # only discharging contributes
+    Gamma_discharge = Gamma_0
     E_bat_dis_total = float(np.sum(Gamma_discharge * Gamma_Discharging * Simulation_StepSize ))
 
     # PV energy available this step (kWh)
@@ -1291,7 +1295,7 @@ def SingleHouse_OnGrid_RL_Terminate_Function(SmartComSim_Object):
         # Band width = 5% of usable range
         E_min = ctx["E_bat_Min"]
         E_max = ctx["E_bat_Max"]
-        low_band_width = 0.0005 * (E_max - E_min)
+        low_band_width = 0.05 * (E_max - E_min)
 
         low_band_lower = E_min
         low_band_upper = E_min + low_band_width
@@ -1361,11 +1365,11 @@ def SingleHouse_OnGrid_RL_Truncate_Function(SmartComSim_Object):
     # If we exceed or reach the data boundary threshold,
     # we cannot supply future horizon data -> must end episode.
     if current_step >= max_safe_step - 1:
-        Terminate = True   # Artificial termination → will map to truncated
+        Truncate = True   # Artificial termination → will map to truncated
     else:
-        Terminate = False
+        Truncate = False
 
-    return Terminate
+    return Truncate
 
 #-------------------------------------------------------------------------------------------------------------#
 # Multi House Off-Grid RL
@@ -1628,7 +1632,7 @@ def MultiHouse_OffGrid_RL_Reward_Function(SmartComSim_Object, observation_k_1, a
     P_bat                   = ctx["P_bat"]
 
     # Additional variable requested
-    E_l_max                 = ctx["E_l_max"]
+    E_l_max                 = ctx["E_l_Max"]
 
     E_AC                    = E_AC / Eff_Inv 
 
@@ -1647,7 +1651,7 @@ def MultiHouse_OffGrid_RL_Reward_Function(SmartComSim_Object, observation_k_1, a
     W_startup = W_off.get("W_startup", 0.0)
     W_surplus = W_off.get("W_surplus", 0.0)
     W_load    = W_off.get("W_load",    0.0)
-    W_mode    = W_off.get("W_mode",    0.0)
+    W_mode    = W_off.get("W_mode",    0.0)   
 
     # =================================================================================
     # Parse observation_k_1
@@ -1758,7 +1762,7 @@ def MultiHouse_OffGrid_RL_Reward_Function(SmartComSim_Object, observation_k_1, a
     # Gamma_0:    shape (N_PV_Bat + N_Bat,)
     # P_bat:      scalar or (N_PV_Bat + N_Bat,)  -> per-step energy capacity
 
-    E_pv_total = float(np.sum(E_PV_now_0)) * (N_PV_Bat + N_PV)
+    E_pv_total = float(np.sum(E_PV_now_0)) * (N_PV_Bat + N_PV) 
 
     # Per-step battery energy term (c,dc) – using P_bat as the base magnitude
     E_bat_step = Gamma_Discharging * Simulation_StepSize                           # broadcasts as needed
@@ -1834,6 +1838,9 @@ def MultiHouse_OffGrid_RL_Reward_Function(SmartComSim_Object, observation_k_1, a
     if energy_surplus > 0.0 and num_charging < num_batteries:
         # scaled penalty
         R_surplus = - energy_surplus * num_not_charging
+    elif energy_surplus <= 0.0 and num_charging > 0:
+        # scaled penalty
+        R_surplus = -1 + energy_surplus * num_charging
     else:
         # Either no surplus, or ALL batteries are charging
         R_surplus = 0.0
@@ -1871,8 +1878,8 @@ def MultiHouse_OffGrid_RL_Reward_Function(SmartComSim_Object, observation_k_1, a
         # ----------------------------------------------------------
         # CASE A: Fully served or overserved
         # ----------------------------------------------------------
-        if Eload >= El:
-            R_load_per_house[i] = 1.0
+        if Eload > El:
+            R_load_per_house[i] = - (Eload - El)
 
         # ----------------------------------------------------------
         # CASE B: Between critical and full demand
@@ -1940,13 +1947,13 @@ def MultiHouse_OffGrid_RL_Reward_Function(SmartComSim_Object, observation_k_1, a
     R_mode = float(np.sum(R_mode_per_house))
 
     Reward = (
-        T_h_Reward      +    # thermal comfort
-        Ebat_Reward     +    # battery SOC
-        Ebal_Reward     +    # energy balance
-        R_startup       +    # AC startup feasibility
-        R_surplus       +    # surplus waste penalty
-        R_load          +    # flexible vs critical load performance
-        R_mode               # heating/cooling correctness
+        W_T_h       * T_h_Reward      +    # thermal comfort
+        W_Ebat      * Ebat_Reward     +    # battery SOC
+        W_Ebal      * Ebal_Reward     +    # energy balance
+        W_startup   * R_startup       +    # AC startup feasibility
+        W_surplus   * R_surplus       +    # surplus waste penalty
+        W_load      * R_load          +    # flexible vs critical load performance
+        W_mode      * R_mode               # heating/cooling correctness
     )  
 
 
@@ -2011,7 +2018,7 @@ def MultiHouse_OffGrid_RL_Terminate_Function(SmartComSim_Object):
         # Band width = 5% of usable range
         E_min = ctx["E_bat_Min"]
         E_max = ctx["E_bat_Max"]
-        low_band_width = 0.0005 * (E_max - E_min)
+        low_band_width = 0.05 * (E_max - E_min)
 
         low_band_lower = E_min
         low_band_upper = E_min + low_band_width
@@ -2081,11 +2088,11 @@ def MultiHouse_OffGrid_RL_Truncate_Function(SmartComSim_Object):
     # If we exceed or reach the data boundary threshold,
     # we cannot supply future horizon data -> must end episode.
     if current_step >= max_safe_step - 1:
-        Terminate = True   # Artificial termination → will map to truncated
+        Truncate = True   # Artificial termination → will map to truncated
     else:
-        Terminate = False
+        Truncate = False
 
-    return Terminate
+    return Truncate
 
 #-------------------------------------------------------------------------------------------------------------#
 # Multi House On-Grid RL
@@ -2328,7 +2335,7 @@ def MultiHouse_OnGrid_RL_Reward_Function(SmartComSim_Object, observation_k_1, ac
     P_bat                   = ctx["P_bat"]
 
     # Additional variable requested
-    E_l_max                 = ctx["E_l_max"]
+    E_l_max                 = ctx["E_l_Max"]
 
     E_AC                    = E_AC / Eff_Inv 
 
@@ -2352,7 +2359,7 @@ def MultiHouse_OnGrid_RL_Reward_Function(SmartComSim_Object, observation_k_1, ac
     # Parse observation_k_1
     # =================================================================================
 
-    o_k_1_Dict = Exp_SingleMultiHouse_OffGrid_parse_observation(observation_k_1, env, RL_Parameters)
+    o_k_1_Dict = Exp_SingleMultiHouse_OnGrid_parse_observation(observation_k_1, env, RL_Parameters)
 
     Th_now_1      = o_k_1_Dict["Th"]            # shape: (N_House,)
     E_Bat_now_1   = o_k_1_Dict["E_Bat"]         # shape: (N_PV_Bat+N_Bat,)
@@ -2365,7 +2372,7 @@ def MultiHouse_OnGrid_RL_Reward_Function(SmartComSim_Object, observation_k_1, ac
     # Parse action_k_0
     # =================================================================================
 
-    a_k_0_Dict = Exp_SingleMultiHouse_OffGrid_parse_action(action_k_0, env)
+    a_k_0_Dict = Exp_SingleMultiHouse_OnGrid_parse_action(action_k_0, env)
 
     U_ac_0   = a_k_0_Dict["U_ac"]      # shape: (N_House,)
     Gamma_0  = a_k_0_Dict["Gamma"]     # shape: (N_PV_Bat + N_Bat,)
@@ -2378,7 +2385,7 @@ def MultiHouse_OnGrid_RL_Reward_Function(SmartComSim_Object, observation_k_1, ac
     # Parse observation_k_0
     # =================================================================================
 
-    o_k_0_Dict = Exp_SingleMultiHouse_OffGrid_parse_observation(observation_k_0, env, RL_Parameters)
+    o_k_0_Dict = Exp_SingleMultiHouse_OnGrid_parse_observation(observation_k_0, env, RL_Parameters)
 
     Th_now_0      = o_k_0_Dict["Th"]            # shape: (N_House,)
     E_Bat_now_0   = o_k_0_Dict["E_Bat"]         # shape: (N_PV_Bat+N_Bat,)
@@ -2496,7 +2503,8 @@ def MultiHouse_OnGrid_RL_Reward_Function(SmartComSim_Object, observation_k_1, ac
     E_load_total = float(np.sum(E_l_now_0))
 
     # Battery discharge energy (kWh) this step
-    Gamma_discharge = np.maximum(Gamma_0, 0.0)   # only discharging contributes
+    # Gamma_discharge = np.maximum(Gamma_0, 0.0)   # only discharging contributes
+    Gamma_discharge = Gamma_0
     E_bat_dis_total = float(np.sum(Gamma_discharge * Gamma_Discharging * Simulation_StepSize ))
 
     # PV energy available this step (kWh)
@@ -2622,7 +2630,7 @@ def MultiHouse_OnGrid_RL_Terminate_Function(SmartComSim_Object):
         # Band width = 5% of usable range
         E_min = ctx["E_bat_Min"]
         E_max = ctx["E_bat_Max"]
-        low_band_width = 0.0005 * (E_max - E_min)
+        low_band_width = 0.05 * (E_max - E_min)
 
         low_band_lower = E_min
         low_band_upper = E_min + low_band_width
@@ -2692,8 +2700,8 @@ def MultiHouse_OnGrid_RL_Truncate_Function(SmartComSim_Object):
     # If we exceed or reach the data boundary threshold,
     # we cannot supply future horizon data -> must end episode.
     if current_step >= max_safe_step - 1:
-        Terminate = True   # Artificial termination → will map to truncated
+        Truncate = True   # Artificial termination → will map to truncated
     else:
-        Terminate = False
+        Truncate = False
 
-    return Terminate
+    return Truncate

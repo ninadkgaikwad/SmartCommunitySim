@@ -28,7 +28,7 @@ from stable_baselines3.common.utils import set_random_seed
 # Adding paths to find local modules
 paths_to_add = [
     r"C:\Users\ninad\Dropbox\NinadGaikwad_PhD\Gaikwad_Research\Gaikwad_Research_Work\SmartCommunitySim\code\Experiments\Exp_Modules",
-    r"C:\Users\ninad\Dropbox\NinadGaikwad_PhD\Gaikwad_Research\Gaikwad_Research_Work\SmartCommunitySim\code\SmartComSim",
+    r"C:\Users\ninad\Dropbox\NinadGaikwad_PhD\Gaikwad_Research\Gaikwad_Research_Work\SmartCommunitySim\code",
 ]
 
 for p in paths_to_add:
@@ -83,6 +83,11 @@ def _get_initial_states(env, N_PV_Bat, N_Bat):
     """
     X_k_Plant_np = np.array(env.X_k_Plant)  # shape approx (1, 39, N_House)
 
+    # Reshape for single house for consistency
+    if (len(X_k_Plant_np.shape) == 2):
+
+        X_k_Plant_np = np.reshape(X_k_Plant_np, (X_k_Plant_np.shape[0], X_k_Plant_np.shape[1], 1))
+
     T_h_Init     = X_k_Plant_np[0, 6, :]    # (1,7,:) -> [0,6,:]
     T_wall_Init  = X_k_Plant_np[0, 7, :]
     T_attic_Init = X_k_Plant_np[0, 8, :]
@@ -129,11 +134,16 @@ def _build_mpc_horizon_slices(env, MPC_Parameters):
     E_LoadData_full      = np.array(env.E_LoadData)
     E_Load_Desired_Array = np.array(env.E_Load_Desired)
 
+    # Reshape for single house for consistency
+    if (len(E_LoadData_full.shape) == 2):
+
+        E_LoadData_full = np.reshape(E_LoadData_full, (E_LoadData_full.shape[0], E_LoadData_full.shape[1], 1))
+
     # Slice along time: [t0, t1)
-    Ws   = Ws_full[t0:t1, ...]
-    T_am = T_am_full[t0:t1, ...]
-    GHI  = GHI_full[t0:t1, ...]
-    DNI  = DNI_full[t0:t1, ...]
+    Ws   = Ws_full[t0:t1, 0]
+    T_am = T_am_full[t0:t1, 0]
+    GHI  = GHI_full[t0:t1, 0]
+    DNI  = DNI_full[t0:t1, 0]
     DateTime_Matrix = DateTime_Matrix_full[t0:t1, :]
 
     # For loads: E_l = desired, E_l_Array = full data
@@ -397,7 +407,7 @@ def build_Community_mpc_context(env, MPC_Parameters):
     # ---------------------------------------------------------------
     ctx["HEMSPlant_Params"] = env.HEMSPlant_Params
     ctx["HEMSHouse_Params"] = env.HEMSHouse_Params
-    ctx["Simulation_Params"] = env.Simulation_Params
+    ctx["Simulation_Params"] = env.simulation_params
 
     return ctx
 
@@ -675,7 +685,7 @@ def _AltiAzi(dec_deg, L_deg, H_deg_array):
     beta_deg = np.zeros_like(H_deg_array, dtype=float)
     phi_deg  = np.zeros_like(H_deg_array, dtype=float)
 
-    for j in range(len(H_deg_array)):
+    """ for j in range(len(H_deg_array)):
         H_deg = H_deg_array[j]
         H_rad = np.deg2rad(H_deg)
 
@@ -723,7 +733,56 @@ def _AltiAzi(dec_deg, L_deg, H_deg_array):
             if azi1_deg >= 0:
                 phi_deg[j] = azi2_deg
             else:
-                phi_deg[j] = -azi2_deg
+                phi_deg[j] = -azi2_deg """    
+    
+    H_deg = H_deg_array
+    H_rad = np.deg2rad(H_deg)
+
+    # --- Elevation angle beta ---
+    # beta = asin( cos(L)*cos(dec)*cos(H) + sin(L)*sin(dec) )
+    arg_beta = (
+        np.cos(L_rad) * np.cos(dec_rad) * np.cos(H_rad)
+        + np.sin(L_rad) * np.sin(dec_rad)
+    )
+    # numerical safety
+    arg_beta = np.clip(arg_beta, -1.0, 1.0)
+    beta_rad = np.arcsin(arg_beta)
+    beta_deg = np.rad2deg(beta_rad)
+
+    # --- Intermediate azimuth azi1 ---
+    # azi1 = asin( cos(dec)*sin(H) / cos(beta) )
+    cos_beta = np.cos(beta_rad)
+    if np.isclose(cos_beta, 0.0):
+        # Degenerate case, just set azi1 = 0
+        azi1_rad = 0.0
+    else:
+        arg_azi1 = (np.cos(dec_rad) * np.sin(H_rad)) / cos_beta
+        arg_azi1 = np.clip(arg_azi1, -1.0, 1.0)
+        azi1_rad = np.arcsin(arg_azi1)
+
+    azi1_deg = np.rad2deg(azi1_rad)
+
+    # MATLAB creates azi2 = 180 - |azi1|
+    azi2_deg = 180.0 - abs(azi1_deg)
+
+    # --- Quadrant corrections ---
+    x = np.cos(H_rad)
+    # y = tan(dec)/tan(L)
+    if np.isclose(np.cos(L_rad), 0.0):
+        # pathological latitude; just avoid division by zero
+        y = np.inf
+    else:
+        y = np.tan(dec_rad) / np.tan(L_rad)
+
+    if x >= y:
+        # Region 1
+        phi_deg = azi1_deg
+    else:
+        # Region 2/3 depending on sign of azi1
+        if azi1_deg >= 0:
+            phi_deg = azi2_deg
+        else:
+            phi_deg = -azi2_deg
 
     return beta_deg, phi_deg
 
@@ -868,7 +927,7 @@ def compute_singlehouse_RC_data_from_ctx(ctx):
         # --- Solar geometry ---
         n   = _JulianDay(Day, Month, Year)              # TODO: provide Python implementation
         dec = _Declination(n)                           # TODO
-        ST  = _ClockToSolarTime(n, hem, Ltm, Long, Time)  # TODO
+        ST, _, _  = _ClockToSolarTime(n, hem, Ltm, Long, Time)  # TODO
 
         # Correction for ST
         if ST < 0:
@@ -881,11 +940,11 @@ def compute_singlehouse_RC_data_from_ctx(ctx):
 
         # --- View factors: Wall ---
         Fw_sum = 0.0
-        for jj in range(len(Area_w)):
-            VF = _ViewFactor(beta, phi, Tilt_w[jj], Azi_w[jj])  # TODO
+        for jj in range(Area_w.size):
+            VF = _ViewFactor(beta, phi, Tilt_w[0,jj], Azi_w[0,jj])  # TODO
             if (VF < 0.0) or (beta < 0.0):
                 VF = 0.0
-            Fw_sum += Area_w[jj] * VF
+            Fw_sum += Area_w[0,jj] * VF
         if np.sum(Area_w) > 0:
             F_w[ii] = Fw_sum / np.sum(Area_w)
         else:
@@ -893,11 +952,11 @@ def compute_singlehouse_RC_data_from_ctx(ctx):
 
         # --- View factors: Roof ---
         Fr_sum = 0.0
-        for jj in range(len(Area_r)):
-            VF = _ViewFactor(beta, phi, Tilt_r[jj], Azi_r[jj])  # TODO
+        for jj in range(Area_r.size):
+            VF = _ViewFactor(beta, phi, Tilt_r, Azi_r)  # TODO
             if (VF < 0.0) or (beta < 0.0):
                 VF = 0.0
-            Fr_sum += Area_r[jj] * VF
+            Fr_sum += Area_r * VF
         if np.sum(Area_r) > 0:
             F_r[ii] = Fr_sum / np.sum(Area_r)
         else:
@@ -905,11 +964,11 @@ def compute_singlehouse_RC_data_from_ctx(ctx):
 
         # --- View factors: Window ---
         Fwin_sum = 0.0
-        for jj in range(len(Area_win)):
-            VF = _ViewFactor(beta, phi, Tilt_win[jj], Azi_win[jj])  # TODO
+        for jj in range(Area_win.size):
+            VF = _ViewFactor(beta, phi, Tilt_win[0,jj], Azi_win[0,jj])  # TODO
             if (VF < 0.0) or (beta < 0.0):
                 VF = 0.0
-            Fwin_sum += Area_win[jj] * VF
+            Fwin_sum += Area_win[0,jj] * VF
         if np.sum(Area_win) > 0:
             F_win[ii] = Fwin_sum / np.sum(Area_win)
         else:
@@ -1066,6 +1125,7 @@ def reshape_and_sanitize_Community_mpc_inputs(
 
     # Weather & load from ctx
     T_am       = np.array(ctx["T_am"],      dtype=float)
+    Ws         = np.array(ctx["Ws"],      dtype=float)
     E_l        = np.array(ctx["E_l"],       dtype=float)
     E_l_Array  = np.array(ctx["E_l_Array"], dtype=float)
     Energy_Price  = np.array(ctx["Energy_Price"], dtype=float)
@@ -1085,6 +1145,7 @@ def reshape_and_sanitize_Community_mpc_inputs(
     # 2) Reshape disturbances: weather, PV, RC outputs
     # -------------------------------------------------------------------------
     T_am   = T_am.reshape(N, 1)
+    Ws     = Ws.reshape(N, 1)
     E_PV   = np.array(E_PV,   dtype=float).reshape(N, 1)
     T_sol_w = np.array(T_sol_w, dtype=float).reshape(N, 1)
     T_sol_r = np.array(T_sol_r, dtype=float).reshape(N, 1)
@@ -1162,6 +1223,7 @@ def reshape_and_sanitize_Community_mpc_inputs(
         "E_bat_Init": E_bat_Init,
         "U_ac_Init": U_ac_Init,
         "T_am": T_am,
+        "Ws": Ws,
         "E_PV": E_PV,
         "T_sol_w": T_sol_w,
         "T_sol_r": T_sol_r,
@@ -1450,8 +1512,8 @@ def Exp_Gurobi_unpack_mpc_solution_OffGrid(
     sol["E_bat"]     = _reshape_house_time(E_bat.X,     Nh_bat)
     sol["Gamma"]     = _reshape_house_time(Gamma.X,     Nh_bat)
     sol["theta_bat"] = _reshape_house_time(theta_bat.X, Nh_bat)
-    sol["f_on"]      = _reshape_house_time(f_on.X,      Nh_bat)
-    sol["f_off"]     = _reshape_house_time(f_off.X,     Nh_bat)
+    sol["f_on"]      = _reshape_house_time(f_on.X,      Nh_all)
+    sol["f_off"]     = _reshape_house_time(f_off.X,     Nh_all)
 
     # ---- PV vars ----
     sol["g"]    = _reshape_house_time(g.X,    Nh_pv)
@@ -1670,7 +1732,7 @@ def Exp_priority_stack_controller_mpc_smartcommunity(
 
     # MATLAB: for ii = 9+1 : Column_E_LoadData
     for ii in range(9, n_cols):  # Python 0-based, 9 is the 10th column
-        if E_Supplied < E_Control_Abs:
+        if E_Supplied < E_Control_Abs:  # and E_LoadData[ii]>0
             # Tentatively shed this device
             E_Supplied = E_Supplied + E_LoadData[ii]
             U_k_PriorityStack[ii - 9] = 1.0
@@ -1923,7 +1985,7 @@ def make_env_fn(
     This factory must return a function (not an env directly!) for DummyVecEnv.
     """
 
-    def _init(seed=0):
+    def _init():
         # Create the environment
         env = SC_Plant.SmartCommunitySimulator(
             simulation_params=simulation_params,
@@ -1944,7 +2006,7 @@ def make_env_fn(
         env = Monitor(env, filename=monitor_file)
 
         # Gymnasium requires seeding via reset()
-        env.reset(seed=seed)
+        # env.reset(seed=seed)
 
         return env
 
@@ -2063,15 +2125,21 @@ def _build_rl_horizon_slices(env, RL_Parameters):
     E_LoadData_full      = np.array(env.E_LoadData)
     E_Load_Desired_Array = np.array(env.E_Load_Desired_Array)
 
+    # Reshape for single house for consistency
+    if (len(E_LoadData_full.shape) == 2):
+
+        E_LoadData_full = np.reshape(E_LoadData_full, (E_LoadData_full.shape[0], E_LoadData_full.shape[1], 1))
+
+
     # Slice along time: [t0, t1)
-    Ws   = Ws_full[t0:t1, ...]
-    T_am = T_am_full[t0:t1, ...]
-    GHI  = GHI_full[t0:t1, ...]
-    DNI  = DNI_full[t0:t1, ...]
+    Ws   = Ws_full[t0:t1, 0]
+    T_am = T_am_full[t0:t1, 0]
+    GHI  = GHI_full[t0:t1, 0]
+    DNI  = DNI_full[t0:t1, 0]
     DateTime_Matrix = DateTime_Matrix_full[t0:t1, :]
 
     # For loads: E_l = desired, E_l_Array = full data
-    E_l       = E_Load_Desired_Array[t0:t1, :, :]   # (N, load_types, N_House)
+    E_l       = E_Load_Desired_Array[t0:t1, :]   # (N, N_House)
     E_l_Array = E_LoadData_full[t0:t1, :, :]
 
     # Get E_l_Max for RL Action Normalization
@@ -2169,7 +2237,7 @@ def build_Community_rl_context(env, RL_Parameters):
     # ---------------------------------------------------------------
     ctx["HEMSPlant_Params"] = env.HEMSPlant_Params
     ctx["HEMSHouse_Params"] = env.HEMSHouse_Params
-    ctx["Simulation_Params"] = env.Simulation_Params
+    ctx["Simulation_Params"] = env.simulation_params
 
     return ctx
 
@@ -2531,6 +2599,7 @@ def reshape_and_sanitize_Community_rl_inputs(
 
     # Weather & load from ctx
     T_am       = np.array(ctx["T_am"],      dtype=float)
+    Ws         = np.array(ctx["Ws"],      dtype=float)
     E_l        = np.array(ctx["E_l"],       dtype=float)
     E_l_Array  = np.array(ctx["E_l_Array"], dtype=float)
     Energy_Price  = np.array(ctx["Energy_Price"], dtype=float)
@@ -2552,6 +2621,7 @@ def reshape_and_sanitize_Community_rl_inputs(
     # 2) Reshape disturbances: weather, PV, RC outputs
     # -------------------------------------------------------------------------
     T_am   = T_am.reshape(N, 1)
+    Ws     = Ws.reshape(N, 1)
     E_PV   = np.array(E_PV,   dtype=float).reshape(N, 1)
     Energy_Price = np.array(Energy_Price, dtype=float).reshape(N, 1)
 
@@ -2628,6 +2698,7 @@ def reshape_and_sanitize_Community_rl_inputs(
         "E_bat_Init": E_bat_Init,
         "U_ac_Init": U_ac_Init,
         "T_am": T_am,
+        "Ws": Ws,
         "E_PV": E_PV,
         "Energy_Price": Energy_Price,
         "E_Load_Critical_Reshaped": E_Load_Critical_Reshaped,
@@ -3013,7 +3084,7 @@ def Exp_SingleMultiHouse_OffGrid_action_creator(
 
     U_k[0, 2, :] = ac_on
     # If you want mode only to matter when AC is ON:
-    U_k[0, 12, :] = mode_heating * ac_on
+    U_k[0, 12, :] = mode_heating 
 
     # ------------------------------------------------------------------
     # 2) Battery charge/discharge → cols 1–2 (same sign logic as MPC)
@@ -3073,7 +3144,7 @@ def Exp_SingleMultiHouse_OffGrid_action_creator(
     pv_only_idx   = np.arange(pv_only_start, pv_only_end)
     pv_global_idx = np.concatenate([pvbat_idx, pv_only_idx])
 
-    U_k[0, 11, pv_global_idx] = 1.0
+    U_k[0, 11, pv_global_idx] = 1.0  # and if (E_PV > 0)
 
     return U_k
 
@@ -3142,7 +3213,7 @@ def Exp_SingleMultiHouse_OnGrid_action_creator(
     mode_heating = (U_ac >= 0.0).astype(float)
 
     U_k[0, 2, :] = ac_on
-    U_k[0, 12, :] = mode_heating * ac_on
+    U_k[0, 12, :] = mode_heating 
 
     # ------------------------------------------------------------------
     # 2) Battery charge/discharge → cols 1–2

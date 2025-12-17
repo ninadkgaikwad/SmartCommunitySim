@@ -18,16 +18,16 @@ from stable_baselines3 import SAC
 # Adding paths to find local modules
 paths_to_add = [
     r"C:\Users\ninad\Dropbox\NinadGaikwad_PhD\Gaikwad_Research\Gaikwad_Research_Work\SmartCommunitySim\code\Experiments\Exp_Modules",
-    r"C:\Users\ninad\Dropbox\NinadGaikwad_PhD\Gaikwad_Research\Gaikwad_Research_Work\SmartCommunitySim\code\SmartComSim",
+    r"C:\Users\ninad\Dropbox\NinadGaikwad_PhD\Gaikwad_Research\Gaikwad_Research_Work\SmartCommunitySim\code",
 ]
 
 for p in paths_to_add:
     if p not in sys.path and os.path.isdir(p):
         sys.path.append(p)
 
-from Exp_Modules.Exp_Config_Module import *
-from Exp_Modules.Exp_MPC_RL_Helpers import *
-from Exp_Modules.Exp_RL_Utilities_Module import *  # you can plug callbacks/utilities here if you want
+from Exp_Config_Module import *
+from Exp_MPC_RL_Helpers import *
+from Exp_RL_Utilities_Module import *  # you can plug callbacks/utilities here if you want
 
 from SmartComSim import SmartCommunity_Simulator as SC_Plant
 
@@ -49,6 +49,9 @@ RL_HORIZON_HOURS = 24
 # Seed for deterministic reset (optional)
 RL_TEST_SEED = 123
 
+# Final or Best Model
+FINAL_MODEL_FLAG = True
+
 # This should match the RESULTS_ROOT + RL folder structure from training
 RL_MODEL_ROOT = r"C:\Users\ninad\Dropbox\NinadGaikwad_PhD\Gaikwad_Research\Gaikwad_Research_Work\SmartCommunitySim\code\Experiments\Exp_Results\RL\Trainer"
 
@@ -56,7 +59,11 @@ RL_MODEL_ROOT = r"C:\Users\ninad\Dropbox\NinadGaikwad_PhD\Gaikwad_Research\Gaikw
 rl_run_name  = f"RL_SAC_{COMMUNITY_TYPE}_{GRID_TYPE}"
 
 # Path to the saved final SAC model (from training script)
-model_path = os.path.join(RL_MODEL_ROOT, "RL", rl_run_name, "sac_hems_final.zip")
+if (FINAL_MODEL_FLAG):
+    model_path = os.path.join(RL_MODEL_ROOT, "RL", rl_run_name, "sac_hems_final.zip")
+else:
+    model_path = os.path.join(RL_MODEL_ROOT, "RL", rl_run_name, "best_model", "best_model.zip")
+
 
 ###############################################################################################################
 ## Build Config and Initialize Environment
@@ -135,6 +142,20 @@ total_rl_time = 0.0
 Total_Simulation_Steps = 0  # actual steps taken
 
 for ii in range(Total_Simulation_Steps):
+
+    # -------------------------------
+    # Print - Iteration Information
+    # -------------------------------
+
+    percent_done = 100.0 * (ii + 1) / Total_Simulation_Steps
+
+    print(
+        f"[Step {ii+1:6d}/{Total_Simulation_Steps}] "
+        f"({percent_done:6.2f}%) | "
+        f"Community={COMMUNITY_TYPE} | "
+        f"Grid={GRID_TYPE} | "
+        f"Controller={CONTROLLER_TYPE}"
+    )
 
     # -------------------------------
     # Start timer for RL policy computation
