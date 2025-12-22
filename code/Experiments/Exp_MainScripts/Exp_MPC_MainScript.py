@@ -37,7 +37,7 @@ from SmartComSim import SmartCommunity_Simulator as SC_Plant
 # -------------------- Community Specifications -------------------- #
 COMMUNITY_TYPE = "Community"  # "House", "Community",  
 
-GRID_TYPE = "On-Grid"  #  "Off-Grid", "On-Grid",
+GRID_TYPE = "Off-Grid"  #  "Off-Grid", "On-Grid",
 
 CONTROLLER_TYPE = "MPC"  # "MPC", "RL-Training", "RL-Testing",
 
@@ -323,7 +323,7 @@ elif (COMMUNITY_TYPE == "Community" and GRID_TYPE == "On-Grid"):
 total_mpc_time = 0.0
 
 # FOR LOOP: For each Simulation Step
-for ii in range(20):  # Total_Simulation_Steps
+for ii in range(Total_Simulation_Steps):  # Total_Simulation_Steps
 
     # -------------------------------
     # Print - Iteration Information

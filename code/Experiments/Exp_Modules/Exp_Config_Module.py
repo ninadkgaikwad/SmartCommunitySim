@@ -29,14 +29,14 @@ def Exp_Configuration_Generator(COMMUNITY_TYPE, GRID_TYPE, CONTROLLER_TYPE, LOAD
     
 
     if LOAD_DATA_INITIALIZE:
-        LoadDataType = 2
-    else:
         LoadDataType = 1
+    else:
+        LoadDataType = 2
 
     if WEATHER_DATA_INITIALIZE:
-        WeatherDataType = 2
-    else:
         WeatherDataType = 1
+    else:
+        WeatherDataType = 2
 
     if (COMMUNITY_TYPE == "House" and  GRID_TYPE == "Off-Grid"  and CONTROLLER_TYPE == "MPC"):  # SingleHouse_OffGrid_MPC_Config
         #-------------------------------------------------------------------------------------------------------------#

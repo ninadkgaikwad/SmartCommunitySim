@@ -1639,8 +1639,8 @@ def Exp_convert_OffGrid_solution_to_arrays(Solution_Dict_List,
     sol["E_bat"]     = reshape_flat(Solution_Dict_List["E_bat"],     Nh_bat)
     sol["Gamma"]     = reshape_flat(Solution_Dict_List["Gamma"],     Nh_bat)
     sol["theta_bat"] = reshape_flat(Solution_Dict_List["theta_bat"], Nh_bat)
-    sol["f_on"]      = reshape_flat(Solution_Dict_List["f_on"],      Nh_bat)
-    sol["f_off"]     = reshape_flat(Solution_Dict_List["f_off"],     Nh_bat)
+    sol["f_on"]      = reshape_flat(Solution_Dict_List["f_on"],      Nh_all)
+    sol["f_off"]     = reshape_flat(Solution_Dict_List["f_off"],     Nh_all)
 
     # PV
     sol["g"] = reshape_flat(Solution_Dict_List["g"], Nh_pv)

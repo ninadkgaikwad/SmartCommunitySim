@@ -32,7 +32,7 @@ class SmartCommunitySimulator(gym.Env):
         # -----------------------------------------------------------------------------------------------------------
         
         # Staring Matlab Engine
-        eng = matlab.engine.start_matlab("-desktop")  # matlab.engine.start_matlab("-desktop")
+        eng = matlab.engine.start_matlab()  # matlab.engine.start_matlab("-desktop")
 
         eng.eval("set(0,'DefaultFigureVisible','off')", nargout=0)
 
@@ -876,6 +876,14 @@ class SmartCommunitySimulator(gym.Env):
             RNG seed.
         """
 
+        # Helper
+        def _decimal_hour_to_timestamp(s: str) -> pd.Timestamp:
+            date_str, hour_str = s.split()             # "2017-09-18", "23.83333:00"
+            dec_hour = float(hour_str.split(":")[0])   # 23.83333
+            h = int(dec_hour)
+            m = int(round((dec_hour - h) * 60))
+            return pd.Timestamp(date_str) + pd.Timedelta(hours=h, minutes=m)
+
         rng = np.random.default_rng(seed)
 
         simulation_period = self.simulation_period
@@ -884,14 +892,18 @@ class SmartCommunitySimulator(gym.Env):
         start_ts = f"{simulation_period['StartYear']}-{simulation_period['StartMonth']:02d}-{simulation_period['StartDay']:02d} {simulation_period['StartTime']}:00"
         end_ts   = f"{simulation_period['EndYear']}-{simulation_period['EndMonth']:02d}-{simulation_period['EndDay']:02d} {simulation_period['EndTime']}:00"
 
+        # ---- Build Corrected timestamp range ----
+        start_ts = _decimal_hour_to_timestamp(start_ts)
+        end_ts = _decimal_hour_to_timestamp(end_ts)
+
         # Handle “24.0” end times (meaning end-of-day -> exclusive)
-        inclusive_setting = "left" if simulation_period["EndTime"] == 24 else "right"
+        # inclusive_setting = "left" if simulation_period["EndTime"] == 24 else "right"
 
         dt_index = pd.date_range(
             start=start_ts,
             end=end_ts,
             freq=freq,
-            inclusive=inclusive_setting
+            inclusive= "both" # inclusive_setting
         )
 
         # ---- Extract calendar fields ----

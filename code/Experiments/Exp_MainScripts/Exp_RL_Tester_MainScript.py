@@ -139,7 +139,13 @@ TimeSteps_MPC_Horizon = int(RL_HORIZON_HOURS * (60/FileRes_Min))
 Total_Simulation_Steps = Total_Steps - TimeSteps_MPC_Horizon
 
 total_rl_time = 0.0
-Total_Simulation_Steps = 0  # actual steps taken
+# Total_Simulation_Steps = 0  # actual steps taken
+
+# -------------------------------
+# Create Initial Observation
+# -------------------------------
+
+observation = SC_Gainesville_Irma.Observation_Generator_Function(SC_Gainesville_Irma)
 
 for ii in range(Total_Simulation_Steps):
 
@@ -173,11 +179,10 @@ for ii in range(Total_Simulation_Steps):
 
     # Step through environment
     observation, reward, terminated, truncated, info = SC_Gainesville_Irma.step(action)
-    Total_Simulation_Steps += 1
-
+    
     # Stop if episode ends (due to internal termination or truncation)
-    if terminated or truncated:
-        break
+    """ if terminated or truncated:
+        break """
 
 # ------------------------------------------------------------
 # After the loop: compute average RL policy time

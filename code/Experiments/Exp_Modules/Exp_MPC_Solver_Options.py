@@ -65,7 +65,7 @@ GUROBI_OPTIONS_DICT = {
         # ---------------------------------------------------------------------
         # Solution improvement / termination
         # ---------------------------------------------------------------------
-        'TimeLimit': 1.0,
+        'TimeLimit': 2.0,
         #   Hard wall-clock time limit (seconds).
         #   MATLAB: params.TimeLimit
 

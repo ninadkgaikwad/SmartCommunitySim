@@ -48,18 +48,18 @@ from SmartComSim import SmartCommunity_Simulator as SC_Plant
 
 # -------------------- Community Specifications -------------------- #
 COMMUNITY_TYPE = "Community"      # "House", "Community"
-GRID_TYPE       = "On-Grid"  # "Off-Grid", "On-Grid"
+GRID_TYPE       = "Off-Grid"  # "Off-Grid", "On-Grid"
 CONTROLLER_TYPE = "RL-Training"  # IMPORTANT: "MPC", "RL-Training", "RL-Testing"
 
 # These flags control whether MATLAB pre-processors recompute/load weather/load data
-LOAD_DATA_INITIALIZE    = True  # True = Initialize Load Data ; False = Use existing
-WEATHER_DATA_INITIALIZE = True  # True = Initialize Weather Data ; False = Use existing
+LOAD_DATA_INITIALIZE    = False  # True = Initialize Load Data ; False = Use existing
+WEATHER_DATA_INITIALIZE = False  # True = Initialize Weather Data ; False = Use existing
 
 # -------------------- RL / SAC Hyperparameters -------------------- #
 RL_SEED           = 42
-TOTAL_TIMESTEPS   = 500_000      # adjust based on compute
+TOTAL_TIMESTEPS   = 300_000      # adjust based on compute
 LEARNING_RATE     = 3e-4
-BUFFER_SIZE       = 200_000
+BUFFER_SIZE       = 50_000
 BATCH_SIZE        = 256
 GAMMA             = 0.99
 TAU               = 0.005
@@ -70,8 +70,8 @@ ENT_COEF          = "auto"       # SAC temperature
 TARGET_ENTROPY    = "auto"       # can set to a float for fine control
 
 # Evaluation / checkpoint settings
-EVAL_FREQ_STEPS   = 10_000       # evaluate every N env steps
-SAVE_FREQ_STEPS   = 50_000       # checkpoint every N env steps
+EVAL_FREQ_STEPS   = 5_000       # evaluate every N env steps
+SAVE_FREQ_STEPS   = 10_000       # checkpoint every N env steps
 
 # -------------------- User Controls for SAC Policy Network -------------------- #
 # Actor (policy) hidden layers
@@ -166,8 +166,8 @@ checkpoint_callback = CheckpointCallback(
     save_freq=SAVE_FREQ_STEPS,
     save_path=checkpoint_dir,
     name_prefix="sac_hems",
-    save_replay_buffer=True,
-    save_vecnormalize=True,
+    save_replay_buffer=False,
+    save_vecnormalize=False,
 )
 
 eval_callback = EvalCallback(

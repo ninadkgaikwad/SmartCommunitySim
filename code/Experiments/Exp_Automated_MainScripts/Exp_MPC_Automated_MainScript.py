@@ -32,8 +32,8 @@ from Exp_MPC_FullRun_Module import *
 ###############################################################################################################
 
 # -------------------- Community Specifications -------------------- #
-COMMUNITY_TYPE_LIST = ["House", "Community"]
-GRID_TYPE_LIST = ["Off-Grid", "On-Grid"]
+COMMUNITY_TYPE_LIST = ["Community"]
+GRID_TYPE_LIST = ["Off-Grid"]
 
 # -------------------- Output Folder (USER-DEFINED) -------------------- #
 OUTPUT_DIR = Path(r"C:\Users\ninad\Dropbox\NinadGaikwad_PhD\Gaikwad_Research\Gaikwad_Research_Work\SmartCommunitySim\code\Experiments\Exp_Results")

@@ -59,7 +59,7 @@ def Exp_RL_Trainer_FullRun(Community_Type, Grid_Type):
 
     # -------------------- RL / SAC Hyperparameters -------------------- #
     RL_SEED           = 42
-    TOTAL_TIMESTEPS   = 100_000      # adjust based on compute
+    TOTAL_TIMESTEPS   = 300_000      # adjust based on compute
     LEARNING_RATE     = 3e-4
     BUFFER_SIZE       = 50_000
     BATCH_SIZE        = 256
@@ -67,7 +67,7 @@ def Exp_RL_Trainer_FullRun(Community_Type, Grid_Type):
     TAU               = 0.005
     TRAIN_FREQ        = 1            # env steps between gradient updates
     GRADIENT_STEPS    = 1            # gradient steps per train step
-    LEARNING_STARTS   = 5_000       # how many steps before learning begins
+    LEARNING_STARTS   = 10_000       # how many steps before learning begins
     ENT_COEF          = "auto"       # SAC temperature
     TARGET_ENTROPY    = "auto"       # can set to a float for fine control
 

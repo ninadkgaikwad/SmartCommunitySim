@@ -24,9 +24,9 @@ for p in paths_to_add:
     if p not in sys.path and os.path.isdir(p):
         sys.path.append(p)
 
-from Exp_Modules.Exp_Config_Module import *
-from Exp_Modules.Exp_MPC_Controllers_Module import *
-from Exp_Modules.Exp_MPC_RL_Helpers import *
+from Exp_Config_Module import *
+from Exp_MPC_Controllers_Module import *
+from Exp_MPC_RL_Helpers import *
 
 from SmartComSim import SmartCommunity_Simulator as SC_Plant
 
@@ -35,19 +35,19 @@ from SmartComSim import SmartCommunity_Simulator as SC_Plant
 ###############################################################################################################
 
 COMMUNITY_TYPE_LIST = [
-    #"House",        # Single house case
+    "House",        # Single house case
     "Community",    # Multi-house community
 ]
 
 GRID_TYPE_LIST = [
-    #"Off-Grid",
+    "Off-Grid",
     "On-Grid",
 ]
 
 CONTROLLER_TYPE_LIST = [
     "MPC",
     "RL-Training",
-    #"RL-Testing",
+    "RL-Testing",
 ]
 
 LOAD_DATA_INITIALIZE = True,  # True = Initialize Load Data ; False = Do not Initialize Load Data
