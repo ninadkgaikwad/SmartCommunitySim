@@ -160,6 +160,29 @@ PRM_Community=mean(PRM);
 SRM_C_Community=mean(SRM_C);
 SRM_All_Community=mean(SRM_All);
 
+%% Computing Local Generation Ratio (LGR)
+
+% Computing Total PV Used
+Total_PV_Used = sum(sum(X_k_Plant_History(1:end-1,2,:), 3));
+
+% Computing Total Battery Discharging
+Total_Bat_Discharging = sum(sum(X_k_Plant_History(1:end-1,6,:), 3));
+
+% Computing Total Battery Charging
+Total_Bat_Charging = sum(sum(X_k_Plant_History(1:end-1,5,:), 3));
+
+% Computing Total Load
+Total_Load = sum(sum(X_k_Plant_History(1:end-1,11,:), 3)) + sum(sum(X_k_Plant_History(1:end-1,12,:), 3));
+
+% Computing Total Local Generation
+Total_Local_Generation = Total_PV_Used + Total_Bat_Discharging;
+
+% Computing Total Local Demand
+Total_Local_Demand = Total_Load + Total_Bat_Charging;
+
+% Computing LGR
+LGR_Community = Total_Local_Generation/Total_Local_Demand;
+
 %% Priniting Results
 
 % Priniting Quantitative Results for each House
@@ -195,6 +218,8 @@ fprintf('\n')
 fprintf(' Community (SRM_C) = %f %/Day',SRM_C_Community);
 fprintf('\n')
 fprintf(' Community (SRM_All) = %f %/Day',SRM_All_Community);
+fprintf('\n')
+fprintf(' Community (LGR) = %f %/Day',LGR_Community);
 fprintf('\n')    
 fprintf('\n')
 
@@ -215,6 +240,7 @@ Plant_Performance.Percentage_C_Served_Community=Percentage_C_Served_Community;
 Plant_Performance.TRM_Community=PRM_Community;
 Plant_Performance.LRM_C_Community=SRM_C_Community;
 Plant_Performance.LRM_O_Community=SRM_All_Community;
+Plant_Performance.LGR_Community=LGR_Community;
     
 end
 

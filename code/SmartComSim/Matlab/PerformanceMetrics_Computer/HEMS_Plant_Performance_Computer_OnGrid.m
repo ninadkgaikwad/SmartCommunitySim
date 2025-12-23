@@ -242,6 +242,7 @@ Plant_Performance.Percentage_C_Served_Community=Percentage_C_Served_Community;
 Plant_Performance.TRM_Community=PRM_Community;
 Plant_Performance.LRM_C_Community=SRM_C_Community;
 Plant_Performance.LRM_O_Community=SRM_All_Community;
+Plant_Performance.LGR_Community=LGR_Community;
     
 end
 
